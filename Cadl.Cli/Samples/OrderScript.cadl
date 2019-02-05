@@ -1,0 +1,182 @@
+﻿message Order //Message used for receiving a new order from the client
+{
+    int Id
+    int UserId
+    int ItemId
+    int Quantity
+    int Status
+}
+
+message Processing //Message used for passing the current order status to the client
+{
+    int OrderId
+    int OrderStatus
+}
+
+//the first param is type of the component and second it the name of the deployed component
+//the lower case intake is the name of the component used to refer back to this component
+//with this script
+component(Function, InTake43465) intakeOrder size:F
+    trigger(input, Order) 
+{
+    processing = Call(processOrder, intake)
+    return processing
+}
+
+component(Function, Process43465) processOrder size:F
+    trigger(input, Order)
+{
+    stock = Select(inventory.Available, Stock) [Id = order.ItemId]
+    onHold = Select(inventory.OnHold, Stock) [Id = order.ItemId]
+    if (stock - onHold >= Order.Quantity)
+    {
+        Insert(transactions.Hold) 
+        {
+            Item = Order.ItemId,
+            Expiration = [Now + 5MIN]
+        }
+        Update(transactions.Inventory) [Id = order.ItemId]
+        {
+            Set(OnHold, [X+order.Quantity])
+        }
+
+        orderId = Insert(transactions.Order)
+        {
+            UserId = Order.UserId,
+            ItemId = Order.TicketId,
+            Quantity = Order.Quantity,
+            Status = 1
+        }
+        Insert(paymentQueue, Order)
+
+        New Processing processing
+        {
+            OrderId = orderId,
+            OrderStatus = 1
+        }
+        return processing
+    }
+    else
+    {
+        Update(transactions.Order) [Id = order.Id]
+        {
+            Set(Status, 5)
+        }
+
+        New Processing processing
+        {
+            OrderStatus = 5
+        }
+        return processing
+    }
+}
+
+component(SQL, Transaction) transactions
+{
+    Table(User)
+    [
+        Id          uniqueIdentifier    not null  default NewId()    PRIMARY KEY,
+        FirstName   varchar(100),
+        LastName    varchar(100),
+        Email       varchar(100)        not null,
+        Password    varchar(100)        not null
+    ]
+    Table(Order)
+    [
+        Id          uniqueIdentifier     not null  default NewId()    PRIMARY KEY,
+        UserId      int                  not null  REFERENCES User (Id),
+        ItemId      int                  not null,
+        Quantity    int                  not null,
+        Status,     int                  not null
+
+    ]
+    Table(OrderStatus)
+    [
+        Id          uniqueIdentifier     not null  default NewId()    PRIMARY KEY,
+        Name        varchar(50)          not null
+    ]
+    {
+        INSERT INTO OrderStatus (Id, Name) 
+        Values
+            (1, 'Pending Payment'),
+            (2, 'Pending Receipt'),
+            (3, 'Payment Declined'),
+            (4, 'Processed'),
+            (5, 'Out Of Stock')
+    }
+    Table(Inventory)
+    [
+        Id          uniqueIdentifier     not null  default NewId()    PRIMARY KEY,
+        ItemId      int                  not null,
+        Available   int                  not null,
+        OnHold      int                  not null
+    ]
+    Table(Hold)
+    [
+        Id          uniqueIdentifier     not null  default NewId()    PRIMARY KEY,
+        ItemId      int                  not null,
+        Expiration  datetime             not null,
+        Quantity    int                  not null
+    ]
+}
+
+component(Queue, Payment) paymentQueue 
+
+component(Function, ProcessPayment) processPayment size:F
+    trigger(queue, paymentQueue)
+{
+    order = Take(paymentQueue, Order)
+    processed = code('Process Payment')
+    if (processed)
+    {
+        Update(transactions.Order) [Id = order.Id]
+        {
+            Set(Status, 2)
+        }
+        Update(transactions.Inventory) [Id = order.ItemId]
+        {
+            Set(Available, [X-order.Quantity])
+            Set(OnHold, [X-order.Quantity])
+        }
+        Insert(receiptQueue, Order)
+    }
+    else
+    {
+        Update(transactions.Order) [Id = order.Id]
+        {
+            Set(Status, 3)
+        }
+    }
+}
+
+component(Function, CheckHolds) checkHolds 
+    trigger(timer, 0:0:1:0) //days:hours:minutes:seconds
+{
+    expiredHolders = Select(inventory.Hold) [Expiration < Now]
+    foreach (expiredHolds, expiredHold)
+    {
+        Update(transactions.Hold, order) [ItemId = expiredHold.ItemId]
+        Set(OnHold, [X-expiredHold.Quantity)
+        Delete(transactions.Hold, expiredHold.ItemId)
+    } 
+}
+
+component(Queue, ReceiptQueue) receiptQueue
+
+component(Function, GenerateReceipt) generateReceipt size:F
+    trigger(queue, receiptQueue)
+{
+    order = Take(receiptQueue, Order)
+    code('Generate Receipt')
+    Update(transactions.Order, order) [Id = order.Id]
+    {
+        Set(Status, 4)
+    }
+}
+
+
+
+
+
+
+

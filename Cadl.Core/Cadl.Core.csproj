@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>netcoreapp2.0</TargetFramework>
+    </PropertyGroup>
+    <ItemGroup>
+        <Folder Include="Builders\" />
+        <Folder Include="Interpreters\" />
+        <Folder Include="Deployers\" />
+        <Folder Include="Parsers\" />
+        <Folder Include="Interpreters\Messages\" />
+        <Folder Include="Interpreters\Azure\" />
+        <Folder Include="Interpreters\Aws\" />
+        <Folder Include="Interpreters\Gcp\" />
+        <Folder Include="TF\" />
+        <Folder Include="TF\Aws\" />
+        <Folder Include="TF\Gcp\" />
+        <Folder Include="TF\Azure\" />
+        <Folder Include="Specs\" />
+        <Folder Include="Components\" />
+    </ItemGroup>
+    <ItemGroup>
+        <Compile Remove="Config\AzureConfig.cs" />
+        <Compile Remove="Interpreters\AzureInterpreter.cs" />
+        <Compile Remove="Interpreters\Azure\AzureSqlInterpeter.cs" />
+    </ItemGroup>
+    <ItemGroup>
+        <EmbeddedResource Include="TF\Azure\*" />
+        <EmbeddedResource Include="TF\Aws\*" />
+        <EmbeddedResource Include="TF\Gcp\*" />
+    </ItemGroup>
+    <ItemGroup>
+        <Reference Include="System.Collections">
+            <HintPath>..\..\..\..\..\..\..\usr\local\share\dotnet\sdk\NuGetFallbackFolder\microsoft.netcore.app\2.0.0\ref\netcoreapp2.0\System.Collections.dll</HintPath>
+        </Reference>
+    </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="System.Data.SqlClient" Version="4.3.0" />
+    </ItemGroup>
+</Project>

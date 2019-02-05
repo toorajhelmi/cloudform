@@ -1,0 +1,23 @@
+
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cadl.Cli", "Cadl.Cli\Cadl.Cli.csproj", "{497384D4-7202-43C9-B396-9386A4D7647F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cadl.Core", "Cadl.Core\Cadl.Core.csproj", "{B3CF9ACD-0A80-4810-99B2-0BCD179FA326}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{497384D4-7202-43C9-B396-9386A4D7647F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{497384D4-7202-43C9-B396-9386A4D7647F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{497384D4-7202-43C9-B396-9386A4D7647F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{497384D4-7202-43C9-B396-9386A4D7647F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B3CF9ACD-0A80-4810-99B2-0BCD179FA326}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B3CF9ACD-0A80-4810-99B2-0BCD179FA326}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B3CF9ACD-0A80-4810-99B2-0BCD179FA326}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B3CF9ACD-0A80-4810-99B2-0BCD179FA326}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
