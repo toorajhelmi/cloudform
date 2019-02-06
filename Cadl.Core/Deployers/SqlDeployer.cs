@@ -10,21 +10,47 @@ namespace Cadl.Core.Deployers
     {
         public static void PopulateSql(Sql sql, Dictionary<string, string> credentials)
         {
-            var cb = new SqlConnectionStringBuilder();
-            cb.DataSource = $"{sql.DbName}server.database.windows.net";
-            cb.UserID = credentials["sql_admin"];
-            cb.Password = credentials["sql_password"];
-            cb.InitialCatalog = $"{sql.DbName}";
-
-            using (var connection = new SqlConnection(cb.ConnectionString))
+            var cb = new SqlConnectionStringBuilder
             {
-                foreach (var table in sql.Tables)
+                DataSource = $"{sql.ServerName}.database.windows.net",
+                UserID = credentials["sql_admin"],
+                Password = credentials["sql_password"],
+                InitialCatalog = $"{sql.DbName}"
+            };
+
+            try
+            {
+                using (var connection = new SqlConnection(cb.ConnectionString))
                 {
-                    SubmitNonQuery(
-                        connection,
-                        $"Creating table {table.Name}",
-                        CreateTable(table));
+                    connection.Open();
+
+                    foreach (var table in sql.Tables)
+                    {
+                        try
+                        {
+                            SubmitNonQuery(
+                                connection,
+                                $"Creating table {table.Name}",
+                                CreateTable(table));
+
+                            if (table.Insests != null)
+                            {
+                                SubmitNonQuery(
+                                    connection,
+                                    $"Populating table {table.Name}",
+                                    Insert(table));
+                            }
+                        }
+                        catch (Exception x)
+                        {
+                            Console.WriteLine($"Creating table '{table.Name}' failed.\nError: {x.Message}");
+                        }
+                    }
                 }
+            }
+            catch (Exception x)
+            {
+                Console.WriteLine($"Creating the DB '{sql.DbName}' failed.\nError: {x.Message}");
             }
         }
 

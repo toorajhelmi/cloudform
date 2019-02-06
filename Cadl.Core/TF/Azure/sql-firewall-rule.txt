@@ -1,0 +1,7 @@
+﻿resource "azurerm_sql_firewall_rule" "#name" {
+  name                = "#name"
+  resource_group_name = "${azurerm_resource_group.#resource_group.name}"
+  server_name         = "${azurerm_sql_server.#server_name.name}"
+  start_ip_address    = "#ip_addr"
+  end_ip_address      = "#ip_addr"
+}

@@ -4,6 +4,7 @@ using System.IO;
 using System.Reflection;
 using Cadl.Core.Components;
 using Cadl.Core.Interpreters.Messages;
+using System.Net;
 
 namespace Cadl.Core.Interpreters.Azure
 {
@@ -22,20 +23,21 @@ namespace Cadl.Core.Interpreters.Azure
             this.outputPath = outputPath;
             props = config;
 
-            props["name"] = "provider"; 
+            props["name"] = "provider";
             GenerateTf("provider");
 
-            props["name"] = "variables"; 
+            props["name"] = "variables";
             GenerateTf("variables");
 
-            props["name"] = config["resource_group"]; 
-            GenerateTf("resource_group");            
+            props["name"] = config["resource_group"];
+            GenerateTf("resource_group");
 
-            foreach (var sql in components.OfType<Sql>())
-            {
-                GenerateTf("sql");
-            }
+            GenerateSqlTf(components);
+            GenerateFunctionTf(components);
+        }
 
+        private void GenerateFunctionTf(List<Component> components)
+        {
             if (components.Any(c => c is Function))
             {
                 props["fn_sa_name"] = $"fnsa{config["resource_group"]}";
@@ -53,9 +55,34 @@ namespace Cadl.Core.Interpreters.Azure
 
                     foreach (var function in size.ToList())
                     {
-                        props["name"] = function.FunctionName;
-                        GenerateTf(outputPath);
+                        props["name"] = function.ComponentName;
+                        GenerateTf("function");
                     }
+                }
+            }
+        }
+
+        private void GenerateSqlTf(List<Component> components)
+        {
+            if (components.Any(c => c is Sql))
+            {
+                var serverName = $"dbserver{config["resource_group"]}";
+                props["name"] = serverName;
+                props["server_name"] = serverName;
+                GenerateTf("sql-server");
+
+                //Detect external IP
+                var externalip = new WebClient().DownloadString("http://icanhazip.com").Trim(new []{'\n'});
+                props["ip_addr"] = externalip;
+                props["name"] = $"serverName-{"fw"}";
+                GenerateTf("sql-firewall-rule");
+
+                foreach (var sql in components.OfType<Sql>())
+                {
+                    sql.ServerName = serverName;
+                    props["name"] = sql.ComponentName;
+                    props["dbname"] = sql.DbName;
+                    GenerateTf("sql-db");
                 }
             }
         }

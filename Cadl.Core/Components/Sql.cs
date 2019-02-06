@@ -6,6 +6,7 @@ namespace Cadl.Core.Components
     public class Sql : Component
     {
         public string DbName { get; set; }
+        public string ServerName { get; set; }
         public List<Table> Tables { get; set; } = new List<Table>();
     }
 }

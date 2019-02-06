@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using Cadl.Core.Components;
 using System.Data.SqlClient;
+using System;
 
 namespace Cadl.Core.Deployers
 {
@@ -17,7 +18,9 @@ namespace Cadl.Core.Deployers
             this.credentials = credentials;
             this.path = path;
             GenerateCredFile();
-            RunTf();
+            //RunTf();
+
+            Console.WriteLine("Starting initialization...");
 
             foreach(var sql in components.OfType<Sql>())
             {
@@ -60,6 +63,9 @@ namespace Cadl.Core.Deployers
             };
             applyProcess.StartInfo.Arguments = "apply -auto-approve";
             applyProcess.Start();
+            applyProcess.WaitForExit();
+
+            Console.WriteLine("Deployed all components.");
         }
     }
 }

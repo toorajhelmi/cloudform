@@ -73,7 +73,7 @@ component(Function, Process43465) processOrder size:F
 
 component(SQL, Transaction) transactions
 {
-    Table(User)
+    Table([Customer])
     [
         Id          uniqueIdentifier    not null  default NewId()    PRIMARY KEY,
         FirstName   varchar(100),
@@ -81,22 +81,23 @@ component(SQL, Transaction) transactions
         Email       varchar(100)        not null,
         Password    varchar(100)        not null
     ]
-    Table(Order)
+    Table([Order])
     [
         Id          uniqueIdentifier     not null  default NewId()    PRIMARY KEY,
-        UserId      int                  not null  REFERENCES User (Id),
+        CustomerId  uniqueIdentifier     not null  REFERENCES [Customer] (Id),
         ItemId      int                  not null,
         Quantity    int                  not null,
-        Status,     int                  not null
+        Status      int                  not null
 
     ]
-    Table(OrderStatus)
+    Table([OrderStatus])
     [
         Id          uniqueIdentifier     not null  default NewId()    PRIMARY KEY,
+        StatusId    int                  not null,
         Name        varchar(50)          not null
     ]
     {
-        INSERT INTO OrderStatus (Id, Name) 
+        (StatusId, Name) 
         Values
             (1, 'Pending Payment'),
             (2, 'Pending Receipt'),
