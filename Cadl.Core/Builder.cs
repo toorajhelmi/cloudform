@@ -49,7 +49,9 @@ namespace Cadl.Core
                 { "client_id", "7ffb12bc-357e-46e5-83e2-7231372561a4" },
                 { "tenant_id", "bafa704d-560b-4ee8-9563-c265cae5ffe6" },
                 { "sql_admin", "admin2020"},
-                { "sql_password", "password1!"}
+                { "sql_password", "password1!"},
+                { "azure_user", "tooraj@me.com" },
+                { "azure_pass", "Hapalu2015!" },
 
             };
             var deployer = new Deployer();

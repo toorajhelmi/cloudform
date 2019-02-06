@@ -18,7 +18,7 @@ namespace Cadl.Core.Deployers
             this.credentials = credentials;
             this.path = path;
             GenerateCredFile();
-            //RunTf();
+            RunTf();
 
             Console.WriteLine("Starting initialization...");
 

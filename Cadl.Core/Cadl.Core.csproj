@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <TargetFramework>netcoreapp2.0</TargetFramework>
+        <TargetFramework>netcoreapp2.2</TargetFramework>
+    </PropertyGroup>
+    <PropertyGroup>
+        <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
     </PropertyGroup>
     <ItemGroup>
-        <Folder Include="Builders\" />
         <Folder Include="Interpreters\" />
         <Folder Include="Deployers\" />
         <Folder Include="Parsers\" />
@@ -18,6 +20,14 @@
         <Folder Include="TF\Azure\" />
         <Folder Include="Specs\" />
         <Folder Include="Components\" />
+        <Folder Include="Code\" />
+        <Folder Include="Code\InsertToQueue\" />
+        <Folder Include="Code\HttpRequest\" />
+        <Folder Include="Code\CallAnother\" />
+        <Folder Include="Code\PeriodicCall\" />
+        <Folder Include="Code\Azure\" />
+        <Folder Include="Code\Aws\" />
+        <Folder Include="Code\Gcp\" />
     </ItemGroup>
     <ItemGroup>
         <Compile Remove="Config\AzureConfig.cs" />
@@ -35,9 +45,12 @@
         </Reference>
     </ItemGroup>
     <ItemGroup>
-        <PackageReference Include="System.Data.SqlClient" Version="4.3.0" />
+        <PackageReference Include="System.Data.SqlClient" Version="4.6.0" />
     </ItemGroup>
     <ItemGroup>
-      <None Remove="Parsers\sql-server.txt" />
+        <None Remove="Parsers\sql-server.txt" />
+        <None Remove="Builders\function.json" />
+        <None Remove="Builders\index.js" />
+        <None Remove="Code\call-function.js" />
     </ItemGroup>
 </Project>

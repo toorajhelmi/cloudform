@@ -102,5 +102,10 @@ namespace Cadl.Core.Parsers
                 return keys.Contains(parts[0]);
             }
         }
+
+        public bool KeyExists(string key)
+        {
+            return Parts.Any(p => p.IndexOf(key) != -1);
+        }
     }
 }

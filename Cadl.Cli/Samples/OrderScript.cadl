@@ -19,27 +19,38 @@ message Processing //Message used for passing the current order status to the cl
 component(Function, InTake43465) intakeOrder size:F
     trigger(input, Order) 
 {
-    processing = Call(processOrder, intake)
-    return processing
+    //Calls another function called processingOrder, passing Order, and assigning the returned value
+    //to processing
+    processing = Call(processOrder, Order)
+    
+    //Returns processing back to the caller
+    Return processing
 }
 
-component(Function, Process43465) processOrder size:F
+component(Function, ProcessOrder) processOrder size:F
     trigger(input, Order)
 {
+    //Runs a SQL SELECT statement assigning the result set tp stock
     stock = Select(inventory.Available, Stock) [Id = order.ItemId]
+    
     onHold = Select(inventory.OnHold, Stock) [Id = order.ItemId]
+    
     if (stock - onHold >= Order.Quantity)
     {
+        //Runs a SQL INSERT statement
         Insert(transactions.Hold) 
         {
             Item = Order.ItemId,
             Expiration = [Now + 5MIN]
         }
+        
+        //Runs a SQL UPDATE statemen
         Update(transactions.Inventory) [Id = order.ItemId]
         {
             Set(OnHold, [X+order.Quantity])
         }
-
+        
+        //Runs a SQL UPDTE statemen and returns the ID
         orderId = Insert(transactions.Order)
         {
             UserId = Order.UserId,
@@ -49,12 +60,12 @@ component(Function, Process43465) processOrder size:F
         }
         Insert(paymentQueue, Order)
 
-        New Processing processing
-        {
-            OrderId = orderId,
-            OrderStatus = 1
-        }
-        return processing
+        var processing = {
+            OrderId: orderId,
+            OrderStatus: 1
+        };
+        
+        Return processing
     }
     else
     {
@@ -67,7 +78,7 @@ component(Function, Process43465) processOrder size:F
         {
             OrderStatus = 5
         }
-        return processing
+        Return processing
     }
 }
 
@@ -127,7 +138,7 @@ component(Function, ProcessPayment) processPayment size:F
     trigger(queue, paymentQueue)
 {
     order = Take(paymentQueue, Order)
-    processed = code('Process Payment')
+    processed = Code(bool, 'Process Payment')
     if (processed)
     {
         Update(transactions.Order) [Id = order.Id]
@@ -153,13 +164,12 @@ component(Function, ProcessPayment) processPayment size:F
 component(Function, CheckHolds) checkHolds 
     trigger(timer, 0:0:1:0) //days:hours:minutes:seconds
 {
-    expiredHolders = Select(inventory.Hold) [Expiration < Now]
-    foreach (expiredHolds, expiredHold)
-    {
+    expiredHolds = Select(inventory.Hold) [Expiration < Now]
+    expiredHolds.forEach(function(expiredHold) {
         Update(transactions.Hold, order) [ItemId = expiredHold.ItemId]
         Set(OnHold, [X-expiredHold.Quantity)
         Delete(transactions.Hold, expiredHold.ItemId)
-    } 
+    });
 }
 
 component(Queue, ReceiptQueue) receiptQueue
