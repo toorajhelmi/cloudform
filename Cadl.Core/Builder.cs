@@ -21,10 +21,10 @@ namespace Cadl.Core
 
             Interpreter interpreter = null;
             var cloud = TargetCloud.Azure;
-                  
+
             var azureConfig = DictionaryEx.Combine(
                 cloudConfiguration.GlobalConfig,
-                cloudConfiguration.AzureConfig, 
+                cloudConfiguration.AzureConfig,
                 factory.Props);
 
             switch (cloud)
@@ -43,7 +43,13 @@ namespace Cadl.Core
 
             interpreter.Interpret();
 
-            var deployer = new Deployer(factory, azureConfig, true);
+            Deployer deployer = null;
+            switch (cloud)
+            {
+                case TargetCloud.Azure: deployer = new AzureDeployer(factory, azureConfig, true); break;
+                default: deployer = new Deployer(factory, azureConfig, true); break;
+            }
+
             deployer.Deploy();
         }
     }

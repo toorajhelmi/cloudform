@@ -1,7 +1,8 @@
 ﻿using System;
+using Cadl.Core.Components;
 using Cadl.Core.Interpreters;
 
-namespace Cadl.Core.Code.Sql
+namespace Cadl.Core.Code.SqlSegments
 {
     public class SelectSegment : CodeSegment
     {
@@ -46,14 +47,14 @@ function #method-name(entity)
     });
 }";
 
-        public SelectSegment(string methodName, string sql, string assignTo, DbInfo dbInfo)
+        public SelectSegment(string methodName, Sql sql, string statement, string assignTo)
         {
             Requires.Add("var Request = require(\"tedious\").Request;");
-            Dependencies.Add(new ConnectionSegement(dbInfo));
+            Dependencies.Add(new ConnectionSegement(sql));
             Methods.Add(selectMethod
                 .Replace("#method-name", methodName)
-                .Replace("#sql", sql)
-                .Replace("#database", dbInfo.Database));
+                .Replace("#sql", statement)
+                .Replace("#database", sql.DbName));
 
             FunctionCode = $"var {assignTo} = await {methodName}();";
         }

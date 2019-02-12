@@ -5,14 +5,15 @@ using System.IO;
 using System.Linq;
 using Cadl.Core.Arctifact;
 using Cadl.Core.Components;
+using Cadl.Core.Settings;
 
 namespace Cadl.Core.Deployers
 {
     public class Deployer
     {
-        private Dictionary<string, object> config;
-        private Factory factory;
-        private bool debug;
+        protected Dictionary<string, object> config;
+        protected Factory factory;
+        protected bool debug;
 
         public Deployer(Factory factory, Dictionary<string, object> config, bool debug = false)
         {
@@ -120,6 +121,11 @@ namespace Cadl.Core.Deployers
 
                 if (canContinue)
                 {
+                    canContinue = DeployCloudSpecific();
+                }
+
+                if (canContinue)
+                {
                     Console.WriteLine("Deployed all components.");
                 }
                 else
@@ -129,6 +135,11 @@ namespace Cadl.Core.Deployers
             }
 
             return canContinue;
+        }
+
+        protected virtual bool DeployCloudSpecific()
+        {
+            return true;
         }
     }
 }

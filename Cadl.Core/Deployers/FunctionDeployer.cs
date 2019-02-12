@@ -12,7 +12,7 @@ namespace Cadl.Core.Deployers
             var templateFolder = "";
             switch (function.Trigger)
             {
-                case Trigger.Input: templateFolder = "HttpRequest"; break;
+                case Trigger.Request: templateFolder = "HttpRequest"; break;
                 case Trigger.Timer: templateFolder = "PeriodicCall"; break;
             }
 
@@ -27,7 +27,7 @@ namespace Cadl.Core.Deployers
             Directory.CreateDirectory($"{outputPath}/Code");
             switch (function.Trigger)
             {
-                case Trigger.Input:
+                case Trigger.Request:
                     break;
                 case Trigger.Timer:
                     break;

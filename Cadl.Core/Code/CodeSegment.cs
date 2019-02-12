@@ -5,7 +5,7 @@ namespace Cadl.Core.Code
 {
     public class CodeSegment
     {
-        public virtual string Name { get; }
+        public virtual string Name { get; protected set; }
         public List<string> Requires { get; set; } = new List<string>();
         public List<string> GlobalVars { get; set; } = new List<string>();
         public List<string> Methods { get; set; } = new List<string>();

@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 using Cadl.Core.Parsers;
-using Cadl.Core.Code.Sql;
 using Cadl.Core.Code;
 using Cadl.Core.Components;
+using Cadl.Core.Code.SqlSegments;
 
 namespace Cadl.Core.Interpreters
 {
@@ -12,12 +12,14 @@ namespace Cadl.Core.Interpreters
     {
         private int methodCount;
         private List<CodeSegment> segments = new List<CodeSegment>();
+        private List<Component> all;
         private Dictionary<string, object> props;
         private Function function;
 
-        public string CompileToJs(Function function, Dictionary<string, object> props)
+        public string CompileToJs(Function function, List<Component> all, Dictionary<string, object> props)
         {
             this.function = function;
+            this.all = all; 
             var cadl = function.Code; 
             this.props = props;
 
@@ -35,7 +37,7 @@ namespace Cadl.Core.Interpreters
                 else if (line.KeyExists("sql"))
                 {
                     GetScope(cadl.Skip(i).ToList(), out int jump);
-                    segments.Add(Sql(cadl.Skip(i).Take(jump).ToList()));
+                    segments.Add(GetSqlSegement(cadl.Skip(i).Take(jump).ToList()));
                     i += jump;
 
                 }
@@ -56,7 +58,7 @@ namespace Cadl.Core.Interpreters
             return Js();
         }
 
-        private CodeSegment Sql(List<Line> scope)
+        private CodeSegment GetSqlSegement(List<Line> scope)
         {
             var db = "";
             var assignTo = "";
@@ -78,27 +80,26 @@ namespace Cadl.Core.Interpreters
             scope[1].EnsureBeginScope();
             scope.Last().EnsureEndScope();
             var statement = Concat(scope, 2, 1);
-            var dbInfo = props[$"db-{db}"] as DbInfo;
-
+            var sql = all.OfType<Sql>().First(s => s.DbName == db);
             if (scope[2].Content.Contains("select"))
             {
                 var methodName = $"sql_select_{assignTo}_{methodCount++}";
-                return new SelectSegment(methodName, statement, assignTo, dbInfo);
+                return new SelectSegment(methodName, sql, statement, assignTo);
             }
             else if (scope[2].Content.Contains("insert"))
             {
                 var methodName = $"sql_insert_{assignTo ?? ""}_{methodCount++}".Replace('.', '_'); 
-                return new InsertSegment(methodName, statement, assignTo, dbInfo);
+                return new InsertSegment(methodName, sql, statement, assignTo);
             }
             else if (scope[2].Content.Contains("update"))
             {
                 var methodName = $"sql_update_{methodCount++}";
-                return new UpdateSegment(methodName, statement, dbInfo);
+                return new UpdateSegment(methodName, sql, statement);
             }
             else if (scope[2].Content.Contains("delete"))
             {
                 var methodName = $"sql_delete_{methodCount++}";
-                return new DeleteSegment(methodName, statement, dbInfo);
+                return new DeleteSegment(methodName, sql, statement);
             }
             else
             {
@@ -221,7 +222,7 @@ namespace Cadl.Core.Interpreters
         {
             sb.Append("module.exports = async function (context, req) {");
             sb.AppendLine();
-            if (function.Trigger == Trigger.Input)
+            if (function.Trigger == Trigger.Request)
             {
                 sb.Append($"var {function.TriggeringMessage} = req.body.{function.TriggeringMessage};");
                 sb.AppendLine();

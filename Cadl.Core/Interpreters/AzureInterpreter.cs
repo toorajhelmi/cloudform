@@ -5,11 +5,14 @@ using System.Net;
 using System.Reflection;
 using Cadl.Core.Arctifact;
 using Cadl.Core.Components;
+using Cadl.Core.Extensions;
 
 namespace Cadl.Core.Interpreters
 {
     public class AzureInterpreter : Interpreter
     {
+        private const int maxNameLength = 24;
+
         public AzureInterpreter(Factory factory, Dictionary<string, object> config)
             : base(factory, config)
         {
@@ -42,15 +45,15 @@ namespace Cadl.Core.Interpreters
         {
             if (factory.Components.Any(c => c is Function))
             {
-                var storageAccountName = $"fnsa{props["resource_group"]}";
+                var storageAccountName = NameGenerator.Unique("fnsa", maxNameLength);
                 props["fn_sa_name"] = storageAccountName;
-                props["name"] = $"fnsa{props["resource_group"]}";
+                props["name"] = storageAccountName;
                 GenerateTf("storage_account", storageAccountName.ToLower());
 
                 var sizes = factory.Components.OfType<Function>().GroupBy(c => c.Size);
                 foreach (var size in sizes)
                 {
-                    var spName = $"fnsp{size.Key}{props["resource_group"]}";
+                    var spName = NameGenerator.Unique($"fnsp{size.Key}", maxNameLength);
                     props["fn_sp_name"] = spName.ToLower();
                     props["name"] = spName;
                     props["size"] = size.Key;
@@ -63,7 +66,7 @@ namespace Cadl.Core.Interpreters
                         props["name"] = function.FunctionName;
                         GenerateTf("function", function.ComponentName);
 
-                        var js = cadlInterpreter.CompileToJs(function, props);
+                        var js = cadlInterpreter.CompileToJs(function, factory.Components, props);
                         Directory.CreateDirectory($"{factory.CodePath}/{function.FunctionName}");
                         File.WriteAllText($"{factory.CodePath}/{function.FunctionName}/index.js", js);
                     }
@@ -75,13 +78,13 @@ namespace Cadl.Core.Interpreters
         {
             if (factory.Components.Any(c => c is Sql))
             {
-                var serverName = $"dbserver{props["resource_group"]}";
+                var serverName = NameGenerator.Unique("dbs", maxNameLength);
                 props["name"] = serverName;
                 props["server_name"] = serverName;
                 GenerateTf("sql_server");
 
                 //Detect external IP
-                var externalip = new WebClient().DownloadString("http://icanhazip.com").Trim(new[] { '\n' });
+                var externalip = new WebClient().DownloadString("http://checkip.amazonaws.com/").Trim(new[] { '\n' });
                 props["ip_addr"] = externalip;
                 props["name"] = $"serverName-{"fw"}";
                 GenerateTf("sql_firewall_rule");
@@ -89,15 +92,10 @@ namespace Cadl.Core.Interpreters
                 foreach (var sql in factory.Components.OfType<Sql>())
                 {
                     sql.ServerName = serverName;
+                    sql.Username = props["sql_admin"].ToString();
+                    sql.Password = props["sql_password"].ToString();
                     props["name"] = sql.DbName;
                     props["dbname"] = sql.DbName;
-                    props[$"db-{sql.DbName}"] = new DbInfo
-                    {
-                        Database = sql.DbName,
-                        Password = props["sql_password"].ToString(),
-                        Server = $"{sql.ServerName}.database.windows.net",
-                        Username = props["sql_admin"].ToString(),
-                    };
                     GenerateTf("sql_db", sql.DbName);
                 }
             }
@@ -108,13 +106,14 @@ namespace Cadl.Core.Interpreters
             if (factory.Components.Any(c => c is Queue))
             {
                 //Create storage account to hold the queues
-                var storageAccountName = $"qsa{props["resource_group"]}";
+                var storageAccountName = NameGenerator.Unique($"qsa", maxNameLength);
                 props["q_sa_name"] = storageAccountName.ToLower();
                 props["name"] = storageAccountName;
                 GenerateTf("storage_account", storageAccountName);
 
                 foreach (var queue in factory.Components.OfType<Queue>())
                 {
+                    queue.StorageAccount = storageAccountName;
                     props["name"] = queue.QueueName;
                     GenerateTf("storage_queue", queue.ComponentName);
                 }

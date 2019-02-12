@@ -5,3 +5,7 @@
   account_tier             = "Standard"
   account_replication_type = "LRS"
 }
+
+output "#name_connection_string" {
+  value = "${azurerm_storage_account.#tf_name.primary_connection_string}"
+}

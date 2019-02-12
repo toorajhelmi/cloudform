@@ -25,9 +25,9 @@
         <Folder Include="Code\Azure\" />
         <Folder Include="Code\Aws\" />
         <Folder Include="Code\Gcp\" />
-        <Folder Include="Code\Sql\" />
+        <Folder Include="Code\SqlSegments\" />
         <Folder Include="Extensions\" />
-        <Folder Include="Code\Azure\Queue\" />
+        <Folder Include="Code\Azure\QueueSegments\" />
         <Folder Include="Arctifact\" />
         <Folder Include="Settings\" />
     </ItemGroup>

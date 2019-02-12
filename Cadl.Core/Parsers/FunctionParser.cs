@@ -3,6 +3,7 @@ using System.Linq;
 using System.Collections.Generic;
 using Cadl.Core.Components;
 using Cadl.Core.Specs;
+using Cadl.Core.Extensions;
 
 namespace Cadl.Core.Parsers
 {
@@ -84,7 +85,7 @@ namespace Cadl.Core.Parsers
             }
             else
             {
-                function.FunctionName = line.Parts[2];
+                function.FunctionName = NameGenerator.Unique(line.Parts[2]);
                 function.ComponentName = line.Parts[3];
                 var sizeType = line.AtVal(4, "size") ?? "M";
                 function.Size =  AzureDefinedSpecs.Instance.Values[$"Function.{sizeType}"]["size"];
@@ -105,8 +106,8 @@ namespace Cadl.Core.Parsers
             {
                 switch (line.Parts[1])
                 {
-                    case "input":
-                        function.Trigger = Trigger.Input;
+                    case "request":
+                        function.Trigger = Trigger.Request;
                         function.TriggeringMessage = line.Parts[2];
                         break;
                     case "queue":

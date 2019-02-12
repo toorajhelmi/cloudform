@@ -1,7 +1,8 @@
 ﻿using System;
+using Cadl.Core.Components;
 using Cadl.Core.Interpreters;
 
-namespace Cadl.Core.Code.Sql
+namespace Cadl.Core.Code.SqlSegments
 {
     public class DeleteSegment : CodeSegment
     {
@@ -30,14 +31,14 @@ function #method-name()
         });    
     });
 }";
-        public DeleteSegment(string methodName, string sql, DbInfo dbInfo)
+        public DeleteSegment(string methodName, Sql sql, string statement)
         {
             Requires.Add("var Request = require(\"tedious\").Request;");
-            Dependencies.Add(new ConnectionSegement(dbInfo));
+            Dependencies.Add(new ConnectionSegement(sql));
             Methods.Add(updateMethod
                 .Replace("#method-name", methodName)
-                .Replace("#sql", sql)
-                .Replace("#database", dbInfo.Database));
+                .Replace("#sql", statement)
+                .Replace("#database", sql.DbName));
             FunctionCode = $"await {methodName}();";
         }
     }

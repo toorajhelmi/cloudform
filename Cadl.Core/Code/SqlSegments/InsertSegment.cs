@@ -1,7 +1,8 @@
 ﻿using System;
+using Cadl.Core.Components;
 using Cadl.Core.Interpreters;
 
-namespace Cadl.Core.Code.Sql
+namespace Cadl.Core.Code.SqlSegments
 {
     public class InsertSegment : CodeSegment
     {
@@ -38,14 +39,14 @@ function #method-name()
         });    
     });
 }";
-        public InsertSegment(string methodName, string sql, string entityId, DbInfo dbInfo)
+        public InsertSegment(string methodName, Sql sql, string statement, string entityId)
         {
             Requires.Add("var Request = require(\"tedious\").Request;");
-            Dependencies.Add(new ConnectionSegement(dbInfo));
+            Dependencies.Add(new ConnectionSegement(sql));
             Methods.Add(insertMethod
                 .Replace("#method-name", methodName)
-                .Replace("#sql", sql)
-                .Replace("#database", dbInfo.Database));
+                .Replace("#sql", statement)
+                .Replace("#database", sql.DbName));
             if (!string.IsNullOrWhiteSpace(entityId))
             {
                 FunctionCode = $"{entityId} = await {methodName}();";

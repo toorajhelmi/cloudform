@@ -3,6 +3,13 @@ using System.Collections.Generic;
 
 namespace Cadl.Core.Settings
 {
+    public enum TargetCloud
+    {
+        Azure,
+        Aws,
+        Gcp
+    }
+
     public class CloudConfiguration
     {
         public Dictionary<string, object> GlobalConfig => new Dictionary<string, object> {

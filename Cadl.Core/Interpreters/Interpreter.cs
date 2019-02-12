@@ -7,13 +7,6 @@ using Cadl.Core.Interpreters.Messages;
 
 namespace Cadl.Core.Interpreters
 {
-    public enum TargetCloud
-    {
-        Azure,
-        Aws,
-        Gcp
-    }
-
     public abstract class Interpreter
     {
         protected Dictionary<string, object> props;

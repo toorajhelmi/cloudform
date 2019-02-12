@@ -6,7 +6,7 @@ namespace Cadl.Core.Components
 {
     public enum Trigger
     {
-        Input,
+        Request,
         Queue,
         Timer
     }

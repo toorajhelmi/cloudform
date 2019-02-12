@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using Cadl.Core.Components;
 using Cadl.Core.Interpreters;
 
-namespace Cadl.Core.Code.Sql
+namespace Cadl.Core.Code.SqlSegments
 {
     public class ConnectionSegement : CodeSegment
     {
@@ -12,7 +13,7 @@ function connectTo#database() {
         var config = {
             userName: '#username',
             password: '#password',
-            server: '#server',
+            server: '#connectinString',
             options: {
                 database: '#database',
                 encrypt: true,
@@ -24,20 +25,16 @@ function connectTo#database() {
     }
 }";
 
-        public ConnectionSegement(DbInfo dbInfo)
+        public ConnectionSegement(Sql sql)
         {
-            Database = dbInfo.Database;
-
-            GlobalVars.Add($"var {dbInfo.Database}_connection;");
+            Name = $"{sql.DbName}_connection";
+            GlobalVars.Add($"var {sql.DbName}_connection;");
             Requires.Add("var Connection = require(\"tedious\").Connection;");
             Methods.Add(connect
-                .Replace("#username", dbInfo.Username)
-                .Replace("#password", dbInfo.Password)
-                .Replace("#server", dbInfo.Server)
-                .Replace("#database", dbInfo.Database));
+                .Replace("#username", sql.Username)
+                .Replace("#password", sql.Password)
+                .Replace("#connectinString", sql.ConnectinString)
+                .Replace("#database", sql.DbName));
         }
-
-        public override string Name => $"{Database}_Connectiont";
-        public string Database { get; set; }
     }
 }
