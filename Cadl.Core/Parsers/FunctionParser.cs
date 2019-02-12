@@ -44,6 +44,7 @@ namespace Cadl.Core.Parsers
                 else if (line.Parts[0].IndexOf('{') != -1)
                 {
                     scopeDepth++;
+                    function.Code.Add(line);
                 }
 
                 else if (line.Parts[0].IndexOf('}') != -1)
@@ -58,6 +59,10 @@ namespace Cadl.Core.Parsers
                         if (scopeDepth == 0)
                         {
                             return function;
+                        }
+                        else
+                        {
+                            function.Code.Add(line);
                         }
                     }
                 }

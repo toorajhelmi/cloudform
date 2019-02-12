@@ -1,12 +1,13 @@
 ﻿using System;
 using System.IO;
+using Cadl.Core.Code;
 using Cadl.Core.Components;
 
 namespace Cadl.Core.Deployers
 {
     public class FunctionDeployer
     {
-        public void AzureDeploy(Function function, string outputPath)
+        public static void AzureDeploy(Function function, string outputPath)
         {
             var templateFolder = "";
             switch (function.Trigger)
@@ -19,13 +20,9 @@ namespace Cadl.Core.Deployers
             Directory.CreateDirectory(codePath);
             CopyFile(templateFolder, "function.json", codePath);
             CopyFile("Azure", "host.json", codePath);
-
-            var compiler = new CadlCompiler();
-            compiler.CompileToJs(function.Code);
-            CopyFile(templateFolder, "index.js", codePath);
         }
 
-        public void AwsDeploy(Function function, string outputPath)
+        public static void AwsDeploy(Function function, string outputPath)
         {
             Directory.CreateDirectory($"{outputPath}/Code");
             switch (function.Trigger)
@@ -37,7 +34,7 @@ namespace Cadl.Core.Deployers
             }
         }
 
-        private void CopyFile(string sourcePath, string sourceName, string outputPath)
+        private static void CopyFile(string sourcePath, string sourceName, string outputPath)
         {
             var assembly = typeof(FunctionDeployer).Assembly;
             using (var resource = assembly.GetManifestResourceStream($"Cadl.Core.Code.{sourcePath}.{sourceName}"))

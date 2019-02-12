@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using Cadl.Core.Interpreters.Azure;
+using Cadl.Core.Arctifact;
 using Cadl.Core.Components;
+using Cadl.Core.Extensions;
 using Cadl.Core.Interpreters.Messages;
 
 namespace Cadl.Core.Interpreters
@@ -16,13 +16,15 @@ namespace Cadl.Core.Interpreters
 
     public abstract class Interpreter
     {
-        protected Dictionary<string, string> config;
+        protected Dictionary<string, object> props;
+        protected Factory factory;
 
-        public Interpreter(Dictionary<string, string> config)
+        public Interpreter(Factory factory, Dictionary<string, object> config)
         {
-            this.config = config;
+            props = config.Copy();
+            this.factory = factory;
         }
 
-        public abstract void Interpret(string outputPath, List<Component> components, List<Message> messages);
+        public abstract void Interpret();
     }
 }

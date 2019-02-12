@@ -31,6 +31,30 @@ namespace Cadl.Core.Parsers
             return Content.EndsWith(c);
         }
 
+        public bool EnsureBeginScope()
+        {
+            if (Parts[0].IndexOf('{') == -1)
+            {
+                throw new ParsingException(new Error(Error.MissingOpenBrace));
+            }
+            else
+            {
+                return true;
+            }
+        }
+
+        public bool EnsureEndScope()
+        {
+            if (Parts[0].IndexOf('}') != -1)
+            {
+                throw new ParsingException(new Error(Error.MissingCloseBrace));
+            }
+            else
+            {
+                return true;
+            }
+        }
+
         public string At(int index)
         {
             if (Parts.Count > index)

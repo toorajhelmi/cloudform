@@ -11,9 +11,6 @@
         <Folder Include="Deployers\" />
         <Folder Include="Parsers\" />
         <Folder Include="Interpreters\Messages\" />
-        <Folder Include="Interpreters\Azure\" />
-        <Folder Include="Interpreters\Aws\" />
-        <Folder Include="Interpreters\Gcp\" />
         <Folder Include="TF\" />
         <Folder Include="TF\Aws\" />
         <Folder Include="TF\Gcp\" />
@@ -28,10 +25,14 @@
         <Folder Include="Code\Azure\" />
         <Folder Include="Code\Aws\" />
         <Folder Include="Code\Gcp\" />
+        <Folder Include="Code\Sql\" />
+        <Folder Include="Extensions\" />
+        <Folder Include="Code\Azure\Queue\" />
+        <Folder Include="Arctifact\" />
+        <Folder Include="Settings\" />
     </ItemGroup>
     <ItemGroup>
         <Compile Remove="Config\AzureConfig.cs" />
-        <Compile Remove="Interpreters\AzureInterpreter.cs" />
         <Compile Remove="Interpreters\Azure\AzureSqlInterpeter.cs" />
     </ItemGroup>
     <ItemGroup>
@@ -52,5 +53,7 @@
         <None Remove="Builders\function.json" />
         <None Remove="Builders\index.js" />
         <None Remove="Code\call-function.js" />
+        <None Remove="Code\JavaScript\insert.js" />
+        <None Remove="Code\JavaScript\code.js" />
     </ItemGroup>
 </Project>

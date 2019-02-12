@@ -19,6 +19,11 @@ namespace Cadl.Core.Parsers
             {
                 queue.QueueName = lines[0].Parts[2];
                 queue.ComponentName = lines[0].Parts[3];
+
+                if (!Validator.ValidateComponentName(queue.QueueName))
+                {
+                    throw new ParsingException(new Error(Error.InvalidComponentName));
+                }
             }
 
             return queue;;

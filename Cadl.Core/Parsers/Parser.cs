@@ -3,6 +3,7 @@ using System.Linq;
 using System.Collections.Generic;
 using Cadl.Core.Interpreters.Messages;
 using Cadl.Core.Components;
+using Cadl.Core.Arctifact;
 
 namespace Cadl.Core.Parsers
 {
@@ -16,17 +17,14 @@ namespace Cadl.Core.Parsers
         }
 
         private List<Line> lines = new List<Line>();
-        private string script;
         private int index;
+        private Factory factory;
 
-        public List<Component> Components { get; set; } = new List<Component>();
-        public List<Message> Messages { get; set; } = new List<Message>();
-
-        public void Parse(string script)
+        public void Parse(Factory factory)
         {
             var messageParser = new MessageParser();
 
-            this.script = script;
+            this.factory = factory;
             ConvertToLines();
 
             for (index = 0; index < lines.Count; index++)
@@ -39,7 +37,7 @@ namespace Cadl.Core.Parsers
                     {
                         var message = messageParser.Parse(lines.Skip(index).ToList(), out int moveAhead);
                         Console.WriteLine($"Parsed message: {message.Name}");
-                        Messages.Add(message);
+                        factory.Messages.Add(message);
                         index += moveAhead;
                     }
                     else if (line.Parts[0] == "component")
@@ -47,7 +45,7 @@ namespace Cadl.Core.Parsers
                         var componentParser = SelectComponentParser(lines[index]);
                         var component = componentParser.Parse(lines.Skip(index).ToList(), out int moveAhead);
                         Console.WriteLine($"Parsed component: [{component.GetType().Name}] {component.ComponentName}");
-                        Components.Add(component);
+                        factory.Components.Add(component);
                         index += moveAhead;
                     }
                     else
@@ -65,7 +63,7 @@ namespace Cadl.Core.Parsers
 
         private void ConvertToLines()
         {
-            var lineTexts = script.Split(new char[] { '\n' }).ToList();
+            var lineTexts = factory.Script.Split(new char[] { '\n' }).ToList();
             for (int i = 0; i < lineTexts.Count; i++)
             {
                 lineTexts[i] = lineTexts[i].Trim(new[] { ' ', '\n', '\r', '\t' });

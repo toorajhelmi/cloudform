@@ -1,0 +1,5 @@
+﻿resource "azurerm_storage_service" "#tf_name" {
+  name                      = "#name" 
+  location                  = "${azurerm_resource_group.#resource_group.location}"
+  account_type = "Standard_LRS"
+}

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Reflection;
+using Cadl.Core.Arctifact;
 
 namespace Cadl.Cli
 {
@@ -9,8 +10,13 @@ namespace Cadl.Cli
         static void Main(string[] args)
         {
             var path = Path.Combine($"{Environment.CurrentDirectory}/Samples/OrderScript.cadl");
-            var script = File.ReadAllText(path);
-            Core.Builder.Build(script);
+
+            var factory = new Factory
+            {
+                Script = File.ReadAllText(path)
+            };
+
+            Core.Builder.Build(factory);
             Console.ReadLine();
         }
     }
