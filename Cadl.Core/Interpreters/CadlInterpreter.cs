@@ -5,16 +5,19 @@ using Cadl.Core.Parsers;
 using Cadl.Core.Code;
 using Cadl.Core.Components;
 using Cadl.Core.Code.SqlSegments;
+using System;
+using Cadl.Core.Code.Azure.QueueSegments;
 
 namespace Cadl.Core.Interpreters
 {
     public class CadlInterpreter
     {
         private int methodCount;
-        private List<CodeSegment> segments = new List<CodeSegment>();
+        private List<Segment> segments = new List<Segment>();
         private List<Component> all;
         private Dictionary<string, object> props;
         private Function function;
+        private int indentCount = 1; 
 
         public string CompileToJs(Function function, List<Component> all, Dictionary<string, object> props)
         {
@@ -30,10 +33,6 @@ namespace Cadl.Core.Interpreters
                 {
 
                 }
-                else if (line.KeyExists("return"))
-                {
-
-                }
                 else if (line.KeyExists("sql"))
                 {
                     GetScope(cadl.Skip(i).ToList(), out int jump);
@@ -41,24 +40,93 @@ namespace Cadl.Core.Interpreters
                     i += jump;
 
                 }
-                else if (line.KeyExists("take"))
+                else if (line.KeyExists("enqueue"))
                 {
+                    segments.Add(GetEnqueueSegement(cadl[i]));
 
+                }
+                else if (line.KeyExists("dequeue"))
+                {
+                    segments.Add(GetDequeueSegement(cadl[i]));
                 }
                 else if (line.KeyExists("code"))
                 {
-
+                    segments.Add(GetCodeSegment(line));
                 }
                 else
                 {
-                    segments.Add(new JavaScriptSegment(line.Content));
+                    if (line.Content.IndexOf('{') != -1)
+                    {
+                        segments.Add(new JavaScriptSegment(indentCount, line.Content));
+                        indentCount++;
+                    }
+                    else if (line.Content.IndexOf('}') != -1)
+                    {
+                        indentCount--;
+                        segments.Add(new JavaScriptSegment(indentCount, line.Content));
+                    }
+                    else
+                    {
+                        segments.Add(new JavaScriptSegment(indentCount, line.Content));
+                    }
                 }
             }
 
             return Js();
         }
 
-        private CodeSegment GetSqlSegement(List<Line> scope)
+        private Segment GetCodeSegment(Line line)
+        {
+            if (line.PartsEqualTo(3))
+            {
+                return new CodeSegment(indentCount, line.Parts[1], line.Parts[2]);
+            }
+            else if (line.PartsEqualTo(5))
+            {
+                return new CodeSegment(indentCount, line.Parts[3], line.Parts[4], line.Parts[0]);
+            }
+            else
+            {
+                throw new ParsingException(new Error(Error.UnknownSyntax));
+            }
+        }
+
+        private Segment GetEnqueueSegement(Line line)
+        {
+            if (!line.PartsEqualTo(3))
+            {
+                throw new ParsingException(new Error(Error.UnknownSyntax));
+            }
+            else
+            {
+                var queueName = line.Parts[1];
+                var variable = line.Parts[2];
+                var queue = all.OfType<Queue>().First(q => q.ComponentName == queueName);
+                return new EnqueueSeqment(indentCount, queue, variable);
+            }
+        }
+
+        private Segment GetDequeueSegement(Line line)
+        {
+            if (!line.PartsEqualTo(4))
+            {
+                throw new ParsingException(new Error(Error.UnknownSyntax));
+            }
+            else
+            {
+                var queueName = line.Parts[3];
+                var variable = line.Parts[0];
+
+                var queue = all.OfType<Queue>().FirstOrDefault(q => q.ComponentName == queueName);
+                if (queue == null)
+                {
+                    throw new ParsingException(new Error(Error.UknownQueue, queueName));
+                }
+                return new DequeueSeqment(indentCount, queue, variable);
+            }
+        }
+
+        private Segment GetSqlSegement(List<Line> scope)
         {
             var db = "";
             var assignTo = "";
@@ -84,22 +152,22 @@ namespace Cadl.Core.Interpreters
             if (scope[2].Content.Contains("select"))
             {
                 var methodName = $"sql_select_{assignTo}_{methodCount++}";
-                return new SelectSegment(methodName, sql, statement, assignTo);
+                return new SelectSegment(indentCount, methodName, sql, statement, assignTo);
             }
             else if (scope[2].Content.Contains("insert"))
             {
                 var methodName = $"sql_insert_{assignTo ?? ""}_{methodCount++}".Replace('.', '_'); 
-                return new InsertSegment(methodName, sql, statement, assignTo);
+                return new InsertSegment(indentCount, methodName, sql, statement, assignTo);
             }
             else if (scope[2].Content.Contains("update"))
             {
                 var methodName = $"sql_update_{methodCount++}";
-                return new UpdateSegment(methodName, sql, statement);
+                return new UpdateSegment(indentCount, methodName, sql, statement);
             }
             else if (scope[2].Content.Contains("delete"))
             {
                 var methodName = $"sql_delete_{methodCount++}";
-                return new DeleteSegment(methodName, sql, statement);
+                return new DeleteSegment(indentCount, methodName, sql, statement);
             }
             else
             {
@@ -117,7 +185,6 @@ namespace Cadl.Core.Interpreters
             var requires = new List<string>();
             var globalVars = new List<string>();
             var methods = new List<string>();
-            var functionCode = new List<string>();
 
             var dependencies = segments.SelectMany(s => s.Dependencies).GroupBy(d => d.Name);
 
@@ -145,10 +212,7 @@ namespace Cadl.Core.Interpreters
                 {
                     methods.Add(method);
                 }
-
-                functionCode.Add(segment.FunctionCode);
             }
-
 
             var js = new StringBuilder();
 
@@ -178,14 +242,28 @@ namespace Cadl.Core.Interpreters
 
             BeginFunction(js);
 
-            foreach (var code in functionCode)
+            foreach (var segment in segments)
             {
-                js.Append(code);
-                js.AppendLine();
+                if (segment.FunctionCode != null)
+                {
+                    js.Append(Indent(segment.FunctionCode, segment.IndentCount * 4));
+                    js.AppendLine();
+                }
             }
 
             EndFunction(js);
             return js.ToString();
+        }
+
+        private string Indent(string text, int spaceCount)
+        {
+            var spaces = "";
+            for (int i = 0; i <= spaceCount; i++)
+            {
+                spaces += ' ';
+            }
+
+            return spaces + text;
         }
 
         private void GetScope(List<Line> cadl, out int jump)
@@ -224,7 +302,7 @@ namespace Cadl.Core.Interpreters
             sb.AppendLine();
             if (function.Trigger == Trigger.Request)
             {
-                sb.Append($"var {function.TriggeringMessage} = req.body.{function.TriggeringMessage};");
+                sb.Append(Indent($"var {function.TriggeringMessage} = req.body.{function.TriggeringMessage};", 4));
                 sb.AppendLine();
             }
         }

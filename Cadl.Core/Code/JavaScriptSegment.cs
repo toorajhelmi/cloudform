@@ -1,9 +1,10 @@
 ﻿using System;
 namespace Cadl.Core.Code
 {
-    public class JavaScriptSegment : CodeSegment
+    public class JavaScriptSegment : Segment
     {
-        public JavaScriptSegment(string code)
+        public JavaScriptSegment(int indentCount, string code)
+            : base(indentCount)
         {
             FunctionCode = code;
         }

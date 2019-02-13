@@ -5,7 +5,7 @@ using Cadl.Core.Interpreters;
 
 namespace Cadl.Core.Code.SqlSegments
 {
-    public class ConnectionSegement : CodeSegment
+    public class ConnectionSegement : Segment
     {
         private const string connect = @"
 function connectTo#database() {
@@ -25,7 +25,8 @@ function connectTo#database() {
     }
 }";
 
-        public ConnectionSegement(Sql sql)
+        public ConnectionSegement(int indentCount, Sql sql)
+            : base(indentCount)
         {
             Name = $"{sql.DbName}_connection";
             GlobalVars.Add($"var {sql.DbName}_connection;");

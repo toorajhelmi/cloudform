@@ -4,7 +4,7 @@ using Cadl.Core.Interpreters;
 
 namespace Cadl.Core.Code.SqlSegments
 {
-    public class DeleteSegment : CodeSegment
+    public class DeleteSegment : Segment
     {
         private string updateMethod = @"
 function #method-name()
@@ -31,10 +31,11 @@ function #method-name()
         });    
     });
 }";
-        public DeleteSegment(string methodName, Sql sql, string statement)
+        public DeleteSegment(int indentCount, string methodName, Sql sql, string statement)
+            : base(indentCount)
         {
             Requires.Add("var Request = require(\"tedious\").Request;");
-            Dependencies.Add(new ConnectionSegement(sql));
+            Dependencies.Add(new ConnectionSegement(indentCount, sql));
             Methods.Add(updateMethod
                 .Replace("#method-name", methodName)
                 .Replace("#sql", statement)

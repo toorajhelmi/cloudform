@@ -13,6 +13,13 @@ namespace Cadl.Core.Parsers
         public const string TriggerExpected = "Tigger expected";
         public const string InvalidTimerPeriod = "Invalid timer period. Should be like days:hours:mins:secs";
         public const string InvalidComponentName = "Component name should be all lower case and only include dashes in the middle";
+        public const string UknownQueue = "Uknown Queue";
+
+        public Error(string message, string what)
+        {
+            Message = message;
+            What = what;
+        }
 
         public Error(string message, int lineNumber = 0, string what = null)
         {

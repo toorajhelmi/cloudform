@@ -28,7 +28,7 @@
         <Folder Include="Code\SqlSegments\" />
         <Folder Include="Extensions\" />
         <Folder Include="Code\Azure\QueueSegments\" />
-        <Folder Include="Arctifact\" />
+        <Folder Include="Artifact\" />
         <Folder Include="Settings\" />
     </ItemGroup>
     <ItemGroup>

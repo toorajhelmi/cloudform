@@ -59,7 +59,7 @@ component(Function, ProcessOrder) processOrder size:F
             values (order.UserId, order.TicketId, order.Quantity, 1)
         }
                  
-        queue(paymentQueue, order)
+        enqueue(paymentQueue, order)
 
         var processing = 
         {
@@ -146,16 +146,16 @@ component(Queue, payment) paymentQueue
 
 //Triggered when a new object is added to the payment queue.
 component(Function, ProcessPayment) processPayment size:F
-    trigger(queue, payment)
+    trigger(queue, paymentQueue)
 {
     //Takes the object placed in the payment queue and assigns it to order
-    order = enqueue(payment)
+    order = dequeue(paymentQueue)
     
     //code will place a placeholder function to be field by the developer.
-    //1st arg is the output of the function (use void for no output)
-    //2nd arg is the name of the function
-    //The rest are inputs tp the function
-    processed = code(bool, Process Payment, order)
+    //-1st arg is the name of the function
+    //-The rest are inputs tp the function
+    //-Returned value is assiged to a variable called processed
+    processed = code(processPayment, order)
     
     if (processed)
     {
@@ -172,7 +172,7 @@ component(Function, ProcessPayment) processPayment size:F
             Set OnHold = OnHold - order.Quantity
             where Id = order.ItemId
         }
-        Queue(receipt, Order)
+        enqueue(receiptQueue, order)
     }
     else
     {
@@ -213,9 +213,9 @@ component(Function, CheckHolds) checkHolds
 component(Queue, receipt) receiptQueue
 
 component(Function, GenerateReceipt) generateReceipt size:F
-    trigger(queue, receipt)
+    trigger(queue, receiptQueue)
 {
-    order = enqueue(receipt)
+    order = dequeue(receiptQueue)
     code('Generate Receipt')
     sql(Transaction)
     {

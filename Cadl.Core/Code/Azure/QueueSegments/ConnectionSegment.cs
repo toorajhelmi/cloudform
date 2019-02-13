@@ -3,20 +3,21 @@ using Cadl.Core.Components;
 
 namespace Cadl.Core.Code.Azure.QueueSegments
 {
-    public class ConnectionSegment : CodeSegment
+    public class ConnectionSegment : Segment
     {
         private const string connect = @"
-function connectTo#stoage-account() {
+function connectTo#storage-account() {
     if (#storage-account_queue != null)
     {
         #storage-account_queue = azure.createQueueService(#connection-string);
     }
 }";
-        public ConnectionSegment(Queue queue)
+        public ConnectionSegment(int indentCount, Queue queue)
+            : base(indentCount)
         {
             Name = $"{queue.StorageAccount}_queue";
             Requires.Add("var azure = require('azure-storage');");
-            GlobalVars.Add($"{queue.StorageAccount}_queue;");
+            GlobalVars.Add($"var {queue.StorageAccount}_queue;");
 
             Methods.Add(connect
                 .Replace("#storage-account", queue.StorageAccount)
