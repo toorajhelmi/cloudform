@@ -11,9 +11,10 @@ namespace Cadl.Core.Parsers
         public const string MissingCloseBrace = "Missing }";
         public const string UnknownComponent = "Unknown component";
         public const string TriggerExpected = "Tigger expected";
-        public const string InvalidTimerPeriod = "Invalid timer period. Should be like days:hours:mins:secs";
+        public const string InvalidTimerPeriod = "Invalid timer period. Should be a number represnting seconds.";
         public const string InvalidComponentName = "Component name should be all lower case and only include dashes in the middle";
-        public const string UknownQueue = "Uknown Queue";
+        public const string UknownQueue = "Uknown queue";
+        public const string ParameterTypeMissing = "Parameter type is missing";
 
         public Error(string message, string what)
         {

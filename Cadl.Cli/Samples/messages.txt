@@ -1,0 +1,14 @@
+﻿message Order //Message used for receiving a new order from the client
+{
+    int Id
+    int UserId
+    int ItemId
+    int Quantity
+    int Status
+}
+
+message Processing //Message used for passing the current order status to the client
+{
+    int OrderId
+    int OrderStatus
+}

@@ -18,10 +18,7 @@
         <Folder Include="Specs\" />
         <Folder Include="Components\" />
         <Folder Include="Code\" />
-        <Folder Include="Code\InsertToQueue\" />
-        <Folder Include="Code\HttpRequest\" />
         <Folder Include="Code\CallAnother\" />
-        <Folder Include="Code\PeriodicCall\" />
         <Folder Include="Code\Azure\" />
         <Folder Include="Code\Aws\" />
         <Folder Include="Code\Gcp\" />
@@ -55,5 +52,11 @@
         <None Remove="Code\call-function.js" />
         <None Remove="Code\JavaScript\insert.js" />
         <None Remove="Code\JavaScript\code.js" />
+        <None Remove="Code\HttpRequest\function.json" />
+        <None Remove="Code\HttpRequest\index.js" />
+        <None Remove="Code\InsertToQueue\function.json" />
+        <None Remove="Code\InsertToQueue\index.js" />
+        <None Remove="Code\PeriodicCall\function.json" />
+        <None Remove="Code\PeriodicCall\index.js" />
     </ItemGroup>
 </Project>

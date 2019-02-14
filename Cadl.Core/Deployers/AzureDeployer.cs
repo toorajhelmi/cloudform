@@ -5,6 +5,8 @@ using Cadl.Core.Arctifact;
 using Cadl.Core.Settings;
 using Cadl.Core.Components;
 using System.Collections.Generic;
+using Cadl.Core.Code.Azure;
+using System.IO;
 
 namespace Cadl.Core.Deployers
 {
@@ -16,6 +18,25 @@ namespace Cadl.Core.Deployers
         }
 
         protected override bool DeployCloudSpecific()
+        {
+            var canContinue = SetQueueConnectionString();
+
+            if (!canContinue)
+            {
+                return false;
+            }
+
+            foreach (var function in factory.Components.OfType<Function>())
+            {
+                AddFunctionBinding(function);
+            }
+
+            AddHostFile();
+
+            return true;
+        }
+
+        private bool SetQueueConnectionString()
         {
             var canContinue = true;
 
@@ -67,6 +88,20 @@ namespace Cadl.Core.Deployers
             }
 
             return canContinue;
+        }
+
+        private void AddFunctionBinding(Function function)
+        {
+            File.WriteAllText($"{factory.CodePath}/{function.FunctionName}/function.json",
+                new BindingGenerator(function).Bindings);
+        }
+
+        private void AddHostFile()
+        {
+            File.WriteAllText($"{factory.CodePath}/host.json",
+                @"{
+                    ""version"": ""2.0""
+                }");
         }
     }
 }

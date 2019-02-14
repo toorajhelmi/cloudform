@@ -1,9 +1,8 @@
 ﻿using System;
-using System.Linq;
 using System.Collections.Generic;
-using Cadl.Core.Interpreters.Messages;
-using Cadl.Core.Components;
+using System.Linq;
 using Cadl.Core.Arctifact;
+using Cadl.Core.Components;
 
 namespace Cadl.Core.Parsers
 {
@@ -16,9 +15,9 @@ namespace Cadl.Core.Parsers
             Component
         }
 
-        private List<Line> lines = new List<Line>();
         private int index;
-        private Factory factory;
+        protected List<Line> lines = new List<Line>();
+        protected Factory factory;
 
         public void Parse(Factory factory)
         {
@@ -58,6 +57,23 @@ namespace Cadl.Core.Parsers
                     pe.Error.LineNumber = index;
                     throw pe;
                 }
+            }
+
+            MapFunctionsToQueues();
+            ParseCloudSpecific();
+        }
+
+        protected virtual void ParseCloudSpecific()
+        {
+        }
+
+        private void MapFunctionsToQueues()
+        {
+            var queues = factory.Components.OfType<Queue>();
+            foreach (var function in factory.Components.OfType<Function>()
+                .Where(f => f.Trigger == Trigger.Queue))
+            {
+                function.TriggeringQueue = queues.First(q => q.ComponentName == function.TriggeringQueueName);
             }
         }
 

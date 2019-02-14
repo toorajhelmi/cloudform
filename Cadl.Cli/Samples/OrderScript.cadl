@@ -1,37 +1,22 @@
-﻿message Order //Message used for receiving a new order from the client
-{
-    int Id
-    int UserId
-    int ItemId
-    int Quantity
-    int Status
-}
-
-message Processing //Message used for passing the current order status to the client
-{
-    int OrderId
-    int OrderStatus
-}
-
-//the first param is type of the component and second it the name of the deployed component
+﻿//the first param is type of the component and second it the name of the deployed component
 //the lower case intake is the name of the component used to refer back to this component
 //within this script
 //trigger specifies what triggers the function which could be request or timer
-//  the request post body is placed in a variable called order
+//  -The request post body is placed in a variable called order
 component(Function, ProcessOrder) processOrder size:F
     trigger(request, order)
 {
     //Runs a SQL SELECT statement on db 'Transaction' assigning the result is assigned to stock
     sql(stock, Transaction)
     {
-        select Available from [Transaction].Inventory
-        where Id = order.ItemId
+        select Available from Inventory
+        where Id = [uniqueidentifier]@order.ItemId
     }
     
     sql(onHold, Transaction)
     {  
-        select OnHold from [Transaction].Hold
-        where Id = order.ItemId
+        select OnHold from Hold
+        where Id = [uniqueidentifier]@order.ItemId
     }
     
     if (stock - onHold >= order.Quantity)
@@ -39,24 +24,24 @@ component(Function, ProcessOrder) processOrder size:F
         //Runs a SQL INSERT statement on db 'Transaction'
         sql(Transaction)
         {
-            insert into [Transaction].Hold (Item, Expiration)
-            values (order.ItemId, SELECT DATEADD(minute, 5, GETDATE()))
+            insert into Hold (ItemId, Expiration, Quantity)
+            select [int]@order.ItemId, DATEADD(minute, 5, GETDATE()), [int]@order.Quantity
         }
         
         //Runs a SQL UPDATE statement
         sql(Transaction)
         {
-            update [Transaction].Inventory
-            set OnHold = OnHold + order.Quantity
-            where Id = order.ItemId
+            update Inventory
+            set OnHold = OnHold + [int]@order.Quantity
+            where Id = [int]@order.ItemId
         }
         
         //Runs a SQL INSERT statement and assgined the new ID to order.Id
         sql(order.Id, Transaction)
         {
-            insert into [Transaction].Order (UserId, ItemId, Quantity, Status)
+            insert into Order (UserId, ItemId, Quantity, Status)
             output inserted.#Id
-            values (order.UserId, order.TicketId, order.Quantity, 1)
+            values ([uniqueidentifier]@order.UserId, [uniqueidentifier]@order.TicketId, [int]@order.Quantity, 1)
         }
                  
         enqueue(paymentQueue, order)
@@ -73,9 +58,9 @@ component(Function, ProcessOrder) processOrder size:F
     {
         sql(Transaction)
         {
-            update [Transaction].Order
+            update Order
             set Status = 5
-            where Id = order.Id
+            where Id = [uniqueidentifier]@order.Id
         }
         
         var processing = 
@@ -146,10 +131,10 @@ component(Queue, payment) paymentQueue
 
 //Triggered when a new object is added to the payment queue.
 component(Function, ProcessPayment) processPayment size:F
-    trigger(queue, paymentQueue)
+    trigger(queue, paymentQueue, order)
 {
     //Takes the object placed in the payment queue and assigns it to order
-    order = dequeue(paymentQueue)
+    //order = dequeue(paymentQueue)
     
     //code will place a placeholder function to be field by the developer.
     //-1st arg is the name of the function
@@ -161,16 +146,16 @@ component(Function, ProcessPayment) processPayment size:F
     {
         sql(Transaction)
         {
-            update [Transaction].Order
+            update Order
             set Status = 2
-            where Id = order.I
+            where Id = [uniqueidentifier]@order.Id
         }
         sql(Transaction)
         {
-            update [Transaction].Inventory
-            set Available = Available -order.Quantity,
-            Set OnHold = OnHold - order.Quantity
-            where Id = order.ItemId
+            update Inventory
+            set Available = Available - [int]@order.Quantity,
+            Set OnHold = OnHold - [int]@order.Quantity
+            where Id = [int]@order.ItemId
         }
         enqueue(receiptQueue, order)
     }
@@ -178,34 +163,39 @@ component(Function, ProcessPayment) processPayment size:F
     {
         sql(Transaction)
         {
-            update [Transaction].Order
-            set status=3
-            where Id = order.Id
+            update Order
+            set status = 3
+            where Id = [uniqueidentifier]@order.Id
         }
     }
 }
 
 component(Function, CheckHolds) checkHolds 
-    trigger(timer, 0:0:1:0) //days:hours:minutes:seconds
+    trigger(timer, 60) //Trigger every 60 seconds
 {
     sql(expiredHolds, Transaction)
     {
-        select * from [Transaction].Hold
-        where Expiration < Now
+        select * from Hold
+        where Expiration < GETDATE()
     }
     
-    expiredHolds.forEach(function(expiredHold) 
+    //SQL statements are awaited so we need to use asyncForEach
+    //asyncForEach is a help method defined by CADL and wait until all
+    //asyncs are completed.
+    //Notice there is @ behinf some parameters. @ is used to indicate
+    //the parameter is passed into the statement from the code. 
+    await asyncForEach(expiredHolds, async (expiredHold) =>
     {
         sql(Transaction)
         {
-            update [Transaction].Hold 
-            set OnHold = OnHold-expiredHold.Quantity
-            where ItemId = expiredHold.ItemId
+            update Hold 
+            set OnHold = OnHold - [int]@expiredHold.Quantity
+            where ItemId = [int]@expiredHold.ItemId
         }
         sql(Transaction)
         {
-            delete [Transaction].Hold
-            where ItemId = expiredHold.ItemId
+            delete Hold
+            where ItemId = [int]@expiredHold.ItemId
         }  
     });
 }
@@ -213,15 +203,15 @@ component(Function, CheckHolds) checkHolds
 component(Queue, receipt) receiptQueue
 
 component(Function, GenerateReceipt) generateReceipt size:F
-    trigger(queue, receiptQueue)
+    trigger(queue, receiptQueue ,order)
 {
-    order = dequeue(receiptQueue)
-    code('Generate Receipt')
+    //order = dequeue(receiptQueue)
+    code(generateReceipt, order)
     sql(Transaction)
     {
-        update [Transaction].Order
+        update Order
         set Status = 4
-        where Id = order.Id
+        where Id = [uniqueidentifier]@order.Id
     }
 }
 

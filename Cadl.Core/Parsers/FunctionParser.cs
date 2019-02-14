@@ -70,6 +70,11 @@ namespace Cadl.Core.Parsers
 
                 else
                 {
+                    if (line.Content.Contains("return"))
+                    {
+                        function.Returns = true;
+                    }
+
                     function.Code.Add(line);
                 }
             }
@@ -94,7 +99,7 @@ namespace Cadl.Core.Parsers
 
         private void SetTrigger(Line line)
         {
-            if (!line.PartsEqualTo(3))
+            if (!line.PartsMoreThan(2))
             {
                 throw new ParsingException(new Error(Error.UnknownSyntax));
             }
@@ -112,19 +117,24 @@ namespace Cadl.Core.Parsers
                         break;
                     case "queue":
                         function.Trigger = Trigger.Queue;
-                        function.TriggeringQueue = line.Parts[2];
+                        function.TriggeringMessage = line.Parts[3];
+                        function.TriggeringQueueName = line.Parts[2];
                         break;
                     case "timer":
                         function.Trigger = Trigger.Timer;
                         var periodParts = line.Parts[2].Split(new[] { ':' });
-                        if (periodParts.Length != 4)
+                        if (int.TryParse(line.Parts[2], out int periodSecs))
+                        {
+                            function.PeriodSecs = periodSecs;
+                        }
+                        else
                         {
                             throw new ParsingException(new Error(Error.InvalidTimerPeriod));
                         }
-                        function.TriggeringTimeSecs = ((int.Parse(periodParts[0]) * 24
-                                                        + int.Parse(periodParts[1])) * 60
-                                                        + int.Parse(periodParts[2])) * 60
-                                                        + int.Parse(periodParts[3]);
+                        //function.TriggeringTimeSecs = ((int.Parse(periodParts[0]) * 24
+                        //+ int.Parse(periodParts[1])) * 60
+                        //+ int.Parse(periodParts[2])) * 60
+                        //+ int.Parse(periodParts[3]);
                         break;
                 }
             }

@@ -145,14 +145,14 @@ namespace Cadl.Core.Parsers
 
                 else if (openBracketFound)
                 {
-                    //if (!line.PartsEqualTo(2))
-                    //{
-                    //    throw new ParsingException(new Error(Error.UnknownSyntax));
-                    //}
-                    //else
-                    //{
-                    //    table.AddColumn(line.Parts[1], line.Parts[0]);
-                    //}
+                    if (!line.PartsMoreThan(1))
+                    {
+                        throw new ParsingException(new Error(Error.UnknownSyntax));
+                    }
+                    else
+                    {
+                        table.AddColumn(line.Parts[0], line.Parts[1]);
+                    }
                     table.TSql += line.Content + "\n";
                 }
 
@@ -166,7 +166,7 @@ namespace Cadl.Core.Parsers
                     //{
                     //    table.InsertValues.Add(line.Parts.ToArray());
                     //}
-                    table.Insests += line.Content + "\n";
+                    //table.Inserts += line.Content + "\n";
                 }
             }
 

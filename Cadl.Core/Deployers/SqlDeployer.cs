@@ -33,7 +33,7 @@ namespace Cadl.Core.Deployers
                                 $"Creating table {table.Name}",
                                 CreateTable(table));
 
-                            if (table.Insests != null)
+                            if (table.Inserts != null)
                             {
                                 SubmitNonQuery(
                                     connection,
@@ -68,7 +68,7 @@ namespace Cadl.Core.Deployers
         {
             return $@"
                 INSERT INTO {table.Name} 
-                {table.Insests};";
+                {table.Inserts};";
         }
 
         private static void SubmitNonQuery(

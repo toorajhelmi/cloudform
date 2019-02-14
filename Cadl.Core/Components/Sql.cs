@@ -3,6 +3,14 @@ using System.Collections.Generic;
 
 namespace Cadl.Core.Components
 {
+    public enum SqlType
+    {
+        Select,
+        Insert,
+        Update,
+        Delete
+    }
+
     public class Sql : Component
     {
         public string DbName { get; set; }
@@ -11,5 +19,6 @@ namespace Cadl.Core.Components
         public string Password { get; set; }
         public string ConnectinString => $"{ServerName}.database.windows.net";
         public List<Table> Tables { get; set; } = new List<Table>();
+        public SqlType SqlType { get; set; }
     }
 }

@@ -9,7 +9,7 @@ namespace Cadl.Core.Code.SqlSegments
     {
         private const string connect = @"
 function connectTo#database() {
-    if (#database_connection != null) {
+    if (#database_connection == null) {
         var config = {
             userName: '#username',
             password: '#password',
@@ -22,6 +22,7 @@ function connectTo#database() {
         };
 
         #database_connection = new Connection(config);
+        #database_connected = true;
     }
 }";
 
@@ -30,7 +31,10 @@ function connectTo#database() {
         {
             Name = $"{sql.DbName}_connection";
             GlobalVars.Add($"var {sql.DbName}_connection;");
-            Requires.Add("var Connection = require(\"tedious\").Connection;");
+            GlobalVars.Add($"var {sql.DbName}_connected = false;");
+            Requires.Add("var Connection = require('tedious').Connection;");
+            Requires.Add("var TYPES = require('tedious').TYPES;");
+
             Methods.Add(connect
                 .Replace("#username", sql.Username)
                 .Replace("#password", sql.Password)

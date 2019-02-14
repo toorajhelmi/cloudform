@@ -1,54 +1,59 @@
-﻿using System;
+﻿using System.Linq;
+using System.Collections.Generic;
 using Cadl.Core.Components;
-using Cadl.Core.Interpreters;
 
 namespace Cadl.Core.Code.SqlSegments
 {
     public class SelectSegment : Segment
     {
-        private string selectMethod => @"
-function #method-name(entity)
+        private const string selectMethod = @"
+async function #method-name(#parameters)
 {
     return new Promise(function (resolve, reject) {
-        connectTo#database();
-        #database_connection.on('connect', function (err) {
-            if (err) {
-                console.log(err);
-                reject(err);
-            } else {
-                console.log('Running ' + '#method-name');
-
-                var query = #sql;
-                var request = new Request(query, function (
-                    err,
-                    rowCount,
-                    rows) {
-                    console.log('Received ' + rowCount);
-                    if (rows) {
-                        var data = [];
-                        rows.forEach(function (row) {
-                            var columns = [];
-                            row.forEach(function (column) {
-                                columns.push(column.value)
-                            });
-                            data.push(columns);
-                        });
-                        console.log(data);
-                        resolve(data);
-                    }
-                    else {
-                        console.log('No rows returned. ');
-                        resolve([]);
+        var query = #sql;
+        var request = new Request(query, function (err, rowCount, rows) {
+            console.log('Received ' + rowCount);
+            if (rows) {
+                var data = [];
+                rows.forEach(function (row) {
+                    var columns = new Map();
+                    row.forEach(function (column) {
+                        columns.set(column.metadata.colName, column.value);
                     });
-
-                #database_connection.execSql(request);
+                    var obj = Array.from(columns).reduce((obj, [key, value]) => (
+                        Object.assign(obj, { [key]: value }) 
+                      ), {});
+                    console.log(obj);
+                    data.push(obj);
+                });
+                resolve(data);
+            }
+            else {
+                console.log('No rows returned. ');
+                resolve([]);
             }
         });
+        request#add-params;
+
+        if (#database_connected) {
+            #database_connection.execSql(request);
+        } else {
+            connectTo#database();
+            #database_connection.on('connect', function (err) {
+                if (err) {
+                    console.log(err);
+                    reject(err);
+                } else {
+                    console.log('Running ' + '#method-name');
+                    #database_connection.execSql(request);
+                }
+            });
+        }
     });
 }";
 
         public SelectSegment(int indentCount, string methodName, Sql sql, 
-            string statement, string assignTo)
+            string statement, string assignTo, List<Parameter> parameters)
             : base(indentCount)
         {
             Requires.Add("var Request = require(\"tedious\").Request;");
@@ -56,9 +61,11 @@ function #method-name(entity)
             Methods.Add(selectMethod
                 .Replace("#method-name", methodName)
                 .Replace("#sql", statement)
-                .Replace("#database", sql.DbName));
+                .Replace("#database", sql.DbName)
+                .Replace("#parameters", string.Join(',', parameters.Select(p => p.Name.Replace("@", ""))))
+                .Replace("#add-params", Helper.CreateParameters(parameters))); ;
 
-            FunctionCode = $"var {assignTo} = await {methodName}();";
+            FunctionCode = $"var {assignTo} = await {methodName}({string.Join(',', parameters.Select(p => p.Value)).Trim()});";
         }
     }
 }

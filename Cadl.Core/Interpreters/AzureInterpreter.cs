@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using Cadl.Core.Arctifact;
+using Cadl.Core.Code.Azure;
 using Cadl.Core.Components;
 using Cadl.Core.Extensions;
 
