@@ -7,16 +7,28 @@ component(Function, ProcessOrder) processOrder size:F
     trigger(request, order)
 {
     //Runs a SQL SELECT statement on db 'Transaction' assigning the result is assigned to stock
-    sql(stock, Transaction)
+    //Note that if result is a scalar (int, string, ...) you should use x = sql(Table) and if result 
+    //is a list you should use sql(Table, x)
+    stock = sql(Transaction)
     {
         select Available from Inventory
-        where Id = [uniqueidentifier]@order.ItemId
+        where ItemId = [int]@order.ItemId
     }
     
-    sql(onHold, Transaction)
+    //Notice there is a @ behind a parameters. @ is used to indicate
+    //the parameter is passed into the statement from the code at run time. 
+    //You need to use @ for any non constant parameter on the right side of 
+    //statements
+    //
+    //Note that we are running two SQL statements to retireive the same
+    // row (above & below). This is for illustration. We could have used 
+    // sql(Transaction, invenroty) to get all the values into inventory & then
+    //use inventory.Quantity or inventory.OnHold to access these values.
+    //
+    onHold = sql(Transaction)
     {  
-        select OnHold from Hold
-        where Id = [uniqueidentifier]@order.ItemId
+        select OnHold from Inventory
+        where ItemId = [int]@order.ItemId
     }
     
     if (stock - onHold >= order.Quantity)
@@ -28,20 +40,22 @@ component(Function, ProcessOrder) processOrder size:F
             select [int]@order.ItemId, DATEADD(minute, 5, GETDATE()), [int]@order.Quantity
         }
         
+        var newHold = onHold + order.Quantity;
+        
         //Runs a SQL UPDATE statement
         sql(Transaction)
         {
             update Inventory
-            set OnHold = OnHold + [int]@order.Quantity
+            set OnHold = [int]@newHold
             where Id = [int]@order.ItemId
         }
         
         //Runs a SQL INSERT statement and assgined the new ID to order.Id
-        sql(order.Id, Transaction)
+        order.Id = sql(Transaction)
         {
-            insert into Order (UserId, ItemId, Quantity, Status)
+            insert into [Order] (CustomerId, ItemId, Quantity, [Status])
             output inserted.#Id
-            values ([uniqueidentifier]@order.UserId, [uniqueidentifier]@order.TicketId, [int]@order.Quantity, 1)
+            values ([uniqueidentifier]@order.CustomerId, [int]@order.ItemId, [int]@order.Quantity, 1)
         }
                  
         enqueue(paymentQueue, order)
@@ -66,7 +80,7 @@ component(Function, ProcessOrder) processOrder size:F
         var processing = 
         {
             OrderId: order.Id,
-            OrderStatus = 5
+            OrderStatus: 5
         };
 
         return processing
@@ -173,29 +187,30 @@ component(Function, ProcessPayment) processPayment size:F
 component(Function, CheckHolds) checkHolds 
     trigger(timer, 60) //Trigger every 60 seconds
 {
-    sql(expiredHolds, Transaction)
+    sql(Transaction, expiredHolds)
     {
         select * from Hold
         where Expiration < GETDATE()
     }
     
-    //SQL statements are awaited so we need to use asyncForEach
-    //asyncForEach is a help method defined by CADL and wait until all
-    //asyncs are completed.
-    //Notice there is @ behinf some parameters. @ is used to indicate
-    //the parameter is passed into the statement from the code. 
-    await asyncForEach(expiredHolds, async (expiredHold) =>
+    //use iterate to loop on a list. 
+    //if there is no await call inside the loop, iterate will act like
+    //an normal forEach. Otherwise it will implement an async forEach.
+    //
+    //SQL statements are awaited so we need to use iterate. JS forEach will
+    //not work
+    expiredHolds.iterate((expiredHold) =>
     {
         sql(Transaction)
         {
-            update Hold 
+            update Inventory 
             set OnHold = OnHold - [int]@expiredHold.Quantity
             where ItemId = [int]@expiredHold.ItemId
         }
         sql(Transaction)
         {
             delete Hold
-            where ItemId = [int]@expiredHold.ItemId
+            where Id = [uniqueidentifier]@expiredHold.Id
         }  
     });
 }

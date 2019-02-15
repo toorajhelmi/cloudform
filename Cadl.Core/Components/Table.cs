@@ -35,9 +35,9 @@ namespace Cadl.Core.Components
                 case "datetime": return "TYPES.Datetime";
                 case "bit": return "TYPES.Bit";
                 case "char": return "TYPES.Char";
-                case "varchar": return "TYPES.Varchar";
+                case "varchar": return "TYPES.VarChar";
                 case "bianry": return "TYPES.Bianry";
-                case "uniqueidentifier": return "TYPES.uniqueidentifier";
+                case "uniqueidentifier": return "TYPES.UniqueIdentifier";
                 default: throw new ParsingException(new Error(Error.UnknownType, sqlType));
 
             }

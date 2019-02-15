@@ -17,7 +17,8 @@ async function #method-name(#parameters)
             rows) {
                 resolve();
             });
-        request#add-params;
+        #add-params
+
         if (#database_connected) {
             #database_connection.execSql(request);
         } else {

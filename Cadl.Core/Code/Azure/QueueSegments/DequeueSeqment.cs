@@ -10,10 +10,10 @@ function dequeue_#queue()
 {
     return new Promise(function (resolve, reject) {
         connectTo#stoage-account();
-        #queue_queue.getMessages('#queue', function(error, results, response) {
+        #storage-account_queue.getMessages('#queue', function(error, results, response) {
             if (!error) {
                 var message = results[0];
-                queueSvc.deleteMessage('#queue', message.messageId, message.popReceipt, function(error, response) {
+                #storage-account_queue.deleteMessage('#queue', message.messageId, message.popReceipt, function(error, response) {
                     if (!error) {
                         resovle(message.messageText);
                     }

@@ -15,15 +15,24 @@ namespace Cadl.Core.Interpreters
         {
             var db = "";
             var assignTo = "";
+            var isScalar = false;
 
-            if (scope[0].Parts.Count == 3)
-            {
-                db = scope[0].Parts[2];
-                assignTo = scope[0].Parts[1];
-            }
-            else if (scope[0].Parts.Count == 2)
+            if (scope[0].Content.IndexOf('=') == -1 && scope[0].Parts.Count == 3)
             {
                 db = scope[0].Parts[1];
+                assignTo = scope[0].Parts[2];
+                isScalar = false;
+            }
+            else if (scope[0].Content.IndexOf('=') == -1 && scope[0].Parts.Count == 2)
+            {
+                db = scope[0].Parts[1];
+                isScalar = false;
+            }
+            else if (scope[0].Content.IndexOf('=') != -1 && scope[0].Parts.Count == 4)
+            {
+                assignTo = scope[0].Parts[0];
+                db = scope[0].Parts[3];
+                isScalar = true;
             }
             else
             {
@@ -39,7 +48,8 @@ namespace Cadl.Core.Interpreters
                 sql.SqlType = SqlType.Select;
                 var methodName = $"sql_select_{assignTo}_{methodCount++}";
                 statement = IncludeSqlParamers(statement, sql, out List<Parameter> parameters);
-                return new SelectSegment(indentCount, methodName, sql, statement, assignTo, parameters);
+                return new SelectSegment(indentCount, methodName, sql, statement, assignTo, parameters,
+                    isScalar);
             }
             else if (scope[2].Content.Contains("insert"))
             {
@@ -47,7 +57,7 @@ namespace Cadl.Core.Interpreters
                 var methodName = $"sql_insert_{assignTo ?? ""}_{methodCount++}".Replace('.', '_');
                 statement = IncludeSqlParamers(statement, sql, out List<Parameter> parameters);
                 return new InsertSegment(indentCount, methodName, sql, statement, 
-                    assignTo, parameters);
+                    assignTo, parameters, assignTo != "");
             }
             else if (scope[2].Content.Contains("update"))
             {
@@ -79,7 +89,7 @@ namespace Cadl.Core.Interpreters
             while (statement.IndexOf('@', startIndex) != -1)
             {
                 startIndex = statement.IndexOf('@', startIndex);
-                var endIndex = statement.IndexOf(' ', startIndex);
+                var endIndex = statement.IndexOfAny(new []{' ', ','}, startIndex);
                 if (endIndex == -1)
                 {
                     endIndex = statement.Length;

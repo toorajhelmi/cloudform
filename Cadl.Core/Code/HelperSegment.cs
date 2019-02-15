@@ -3,8 +3,8 @@ namespace Cadl.Core.Code
 {
     public class HelperSegment : Segment
     {
-        private const string asyncForEach = @"
-async function asyncForEach(array, callback) {
+        private const string asyncIterate = @"
+async function iterate(array, callback) {
     for (let index = 0; index < array.length; index++) {
       await callback(array[index], index, array);
     }
@@ -13,7 +13,7 @@ async function asyncForEach(array, callback) {
         public HelperSegment(int indentCount)
             : base(indentCount)
         {
-            Methods.Add(asyncForEach);
+            Methods.Add(asyncIterate);
         }
     }
 }

@@ -31,6 +31,7 @@
     <ItemGroup>
         <Compile Remove="Config\AzureConfig.cs" />
         <Compile Remove="Interpreters\Azure\AzureSqlInterpeter.cs" />
+        <Compile Remove="Interpreters\ComponentInterpreter.cs" />
     </ItemGroup>
     <ItemGroup>
         <EmbeddedResource Include="TF\Azure\*" />

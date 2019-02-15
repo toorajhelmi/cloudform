@@ -17,20 +17,24 @@ async function #method-name(#parameters)
             rows) {
             console.log('Received ' + rowCount);
                 if (rows) {
-                    var id = rows[0][0].value;
-                    console.log(id);
-                    resolve(id);
+                    if (#returns-id) {
+                        var id = rows[0][0].value;
+                        console.log(id);
+                        resolve(id);
+                    } else {
+                        resolve();
+                    }
                 }
                 else {
                     console.log('Insert Failed.');
                     resolve(null);
                 }
             });
+        #add-params
+
         if (#database_connected) {
             #database_connection.execSql(request);
         } else {
-            request#add-params;
-            connectTo#database();
             #database_connection.on('connect', function (err) {
                 if (err) {
                     console.log(err);
@@ -45,7 +49,7 @@ async function #method-name(#parameters)
 }";
 
         public InsertSegment(int indentCount, string methodName, Sql sql, 
-            string statement, string entityId, List<Parameter> parameters)
+            string statement, string entityId, List<Parameter> parameters, bool returnsId)
             : base(indentCount)
         {
             Requires.Add("var Request = require(\"tedious\").Request;");
@@ -54,6 +58,7 @@ async function #method-name(#parameters)
                 .Replace("#method-name", methodName)
                 .Replace("#sql", statement)
                 .Replace("#database", sql.DbName)
+                .Replace("#returns-id", returnsId.ToString())
                 .Replace("#parameters", string.Join(',', parameters.Select(p => p.Name.Replace("@", ""))))
                 .Replace("#add-params", Helper.CreateParameters(parameters)));
             if (!string.IsNullOrWhiteSpace(entityId))

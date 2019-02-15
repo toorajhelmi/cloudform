@@ -5,6 +5,7 @@ using Cadl.Core.Parsers;
 using Cadl.Core.Code;
 using Cadl.Core.Components;
 using Cadl.Core.Code.Azure.QueueSegments;
+using System;
 
 namespace Cadl.Core.Interpreters
 {
@@ -16,13 +17,13 @@ namespace Cadl.Core.Interpreters
         private List<Component> components;
         private Dictionary<string, object> props;
         private Function function;
-        private int indentCount = 1; 
+        private int indentCount = 1;
 
         public string CompileToJs(Function function, List<Component> components, Dictionary<string, object> props)
         {
             this.function = function;
-            this.components = components; 
-            var cadl = function.Code; 
+            this.components = components;
+            var cadl = function.Code;
             this.props = props;
 
             segments.Add(new HelperSegment(indentCount));
@@ -32,12 +33,12 @@ namespace Cadl.Core.Interpreters
                 var line = cadl[i];
                 if (line.KeyExists("call"))
                 {
-
+                    //Todo
                 }
                 else if (line.KeyExists("sql"))
                 {
                     GetScope(cadl.Skip(i).ToList(), out int jump);
-                    segments.Add(SqlInterpreter.GetSqlSegement(components, 
+                    segments.Add(SqlInterpreter.GetSqlSegement(components,
                         cadl.Skip(i).Take(jump).ToList(), indentCount, ref methodCount));
                     i += jump;
                 }
@@ -49,6 +50,11 @@ namespace Cadl.Core.Interpreters
                 else if (line.KeyExists("dequeue"))
                 {
                     segments.Add(GetDequeueSegement(cadl[i]));
+                }
+                else if (line.KeyExists("iterate"))
+                {
+                    segments.Add(new IterationSegment(indentCount,
+                        GetScope(cadl.Skip(i).ToList(), out int x)));
                 }
                 else if (line.KeyExists("code"))
                 {
@@ -218,34 +224,40 @@ namespace Cadl.Core.Interpreters
             return spaces + text;
         }
 
-        private void GetScope(List<Line> cadl, out int jump)
+        private List<Line> GetScope(List<Line> cadl, out int jump)
         {
             jump = 0;
-            bool openBraceFound = false;
+            int scopeDepth = 0;
+
             for (jump = 0; jump < cadl.Count; jump++)
             {
                 var line = cadl[jump];
 
                 if (jump == 1)
                 {
-                    if (line.EnsureBeginScope())
-                    {
-                        openBraceFound = true;
-                    }
+                    if (line.EnsureBeginScope()) ;
                 }
 
+                if (line.Parts[0].IndexOf('{') != -1)
+                {
+                    scopeDepth++;
+                }
                 else if (line.Parts[0].IndexOf('}') != -1)
                 {
-                    if (!openBraceFound)
+                    scopeDepth--;
+
+                    if (scopeDepth < 0)
                     {
                         throw new ParsingException(new Error(Error.MissingOpenBrace));
                     }
-                    else
+                    else if (scopeDepth == 0)
                     {
                         break;
                     }
                 }
             }
+
+            return cadl.Take(jump).ToList();
         }
 
         private void BeginFunction(StringBuilder sb)
@@ -264,7 +276,13 @@ namespace Cadl.Core.Interpreters
             sb.AppendLine();
             if (function.Trigger == Trigger.Request)
             {
-                sb.Append(Indent($"var {function.TriggeringMessage} = req.body.{function.TriggeringMessage};", indentationUnit));
+                sb.Append("if (!req || !req.body) {");
+                sb.AppendLine();
+                sb.Append(Indent($"return {function.TriggeringMessage} missing", indentationUnit));
+                sb.AppendLine();
+                sb.Append("}");
+                sb.AppendLine();
+                sb.Append(Indent($"var {function.TriggeringMessage} = req.body;", indentationUnit));
                 sb.AppendLine();
             }
         }

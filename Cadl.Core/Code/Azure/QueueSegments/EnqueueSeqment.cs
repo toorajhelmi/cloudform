@@ -9,7 +9,7 @@ namespace Cadl.Core.Code.Azure.QueueSegments
 function enqueue_#queue(#message)
 {
     connectTo#stoage-account();
-    #queue_queue.createMessage('#queue', #message, function(error) {
+    #storage-account_queue.createMessage('#queue', JSON.stringify(#message), function(error) {
         if (!error) {
             // Message inserted
         }
