@@ -12,6 +12,7 @@ namespace Cadl.Core.Components
     }
     public class Function : Component
     {
+        public const string FolderName = "Function";
         public string FunctionName { get; set; }
         public List<Line> Code { get; set; } = new List<Line>();
         public string Size { get; set; }
@@ -23,8 +24,11 @@ namespace Cadl.Core.Components
         public int PeriodSecs { get; set; }
 
         //Only for Queue Trigger
-        public string TriggeringQueueName { get; set; }
-        public Queue TriggeringQueue { get; set; }
-        public string TriggeringMessage { get; set; }
+        public string InputQueueName { get; set; }
+        public Queue InputQueue { get; set; }
+        public string InputMessage { get; set; }
+
+        public string OutputQueueName { get; set; }
+        public Queue OutputQueue { get; set; }
     }
 }

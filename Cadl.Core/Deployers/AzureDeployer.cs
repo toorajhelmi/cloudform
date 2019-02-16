@@ -1,19 +1,22 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using Cadl.Core.Arctifact;
-using Cadl.Core.Settings;
-using Cadl.Core.Components;
-using System.Collections.Generic;
 using Cadl.Core.Code.Azure;
-using System.IO;
+using Cadl.Core.Components;
+using Cadl.Core.Extensions;
+using Cadl.Core.Settings;
 
 namespace Cadl.Core.Deployers
 {
     public class AzureDeployer : Deployer
     {
+        private const string az = "az";
         public AzureDeployer(Factory factory, Dictionary<string, object> config, bool debug = false)
-            : base(factory, config, debug)
+            : base(factory, config)
         {
         }
 
@@ -29,11 +32,12 @@ namespace Cadl.Core.Deployers
             foreach (var function in factory.Components.OfType<Function>())
             {
                 AddFunctionBinding(function);
+                AddHostFile($"{factory.CodePath}/{function.FunctionName}");
             }
 
-            AddHostFile();
+            canContinue = DeployCode();
 
-            return true;
+            return canContinue;
         }
 
         private bool SetQueueConnectionString()
@@ -50,7 +54,7 @@ namespace Cadl.Core.Deployers
                         WorkingDirectory = factory.TfPath,
                         FileName = $"terraform",
                         RedirectStandardOutput = true,
-                        RedirectStandardError = !debug
+                        RedirectStandardError = !ApplicationSettings.Debug
                     }
                 };
                 outputProcess.StartInfo.Arguments = $"output {queue.StorageAccount}_connection_string";
@@ -67,12 +71,12 @@ namespace Cadl.Core.Deployers
                     }
                 }
 
-                if (!debug)
+                if (!ApplicationSettings.Debug)
                 {
                     while (!outputProcess.StandardError.EndOfStream)
                     {
                         string line = outputProcess.StandardError.ReadLine();
-                        if (line.IndexOf("Error") != -1)
+                        if (line.IndexOf("Error", StringComparison.InvariantCultureIgnoreCase) != -1)
                         {
                             canContinue = false;
                             outputProcess.Close();
@@ -92,16 +96,49 @@ namespace Cadl.Core.Deployers
 
         private void AddFunctionBinding(Function function)
         {
-            File.WriteAllText($"{factory.CodePath}/{function.FunctionName}/function.json",
+            File.WriteAllText($"{factory.CodePath}/{function.FunctionName}/{Function.FolderName}/function.json",
                 new BindingGenerator(function).Bindings);
         }
 
-        private void AddHostFile()
+        private void AddHostFile(string desinationPath)
         {
-            File.WriteAllText($"{factory.CodePath}/host.json",
+            File.WriteAllText($"{desinationPath}/host.json",
                 @"{
                     ""version"": ""2.0""
                 }");
+        }
+
+        private bool DeployCode()
+        {
+            //az login --service-principal -u "http://my-app" -p <password> --tenant <tenant>
+            var loginProcess = ProcessEx.Create(factory.CodePath, az,
+                $"login --service-principal -u {config["client_id"]} -p {config["client_secret"]} --tenant {config["tenant_id"]}");
+            var succedeed = loginProcess.StopAtError();
+
+            if (!succedeed)
+            {
+                return false;
+            }
+
+            Directory.CreateDirectory(factory.PackagePath);
+
+            var succeeded = true;
+            foreach (var function in factory.Components.OfType<Function>())
+            {
+                //az functionapp deployment source config-zip -g test -n test1543  --src /Users/Tooraj/MyFunctionProj/HttpTrigger.zip
+                var packagePath = $"{factory.PackagePath}/{function.FunctionName}.zip";
+                ZipFile.CreateFromDirectory($"{factory.CodePath}/{function.FunctionName}", packagePath);
+                var rg = config["resource_group"];
+                var pushCodeProcess = ProcessEx.Create(factory.CodePath, az,
+                    $"functionapp deployment source config-zip -g {rg} -n {function.FunctionName}  --src {packagePath}");
+                succedeed = pushCodeProcess.StopAtError();
+                if (!succedeed)
+                {
+                    break;
+                }
+            }
+            return succedeed;
+
         }
     }
 }

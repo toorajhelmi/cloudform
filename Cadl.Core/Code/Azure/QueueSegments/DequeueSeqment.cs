@@ -9,7 +9,7 @@ namespace Cadl.Core.Code.Azure.QueueSegments
 function dequeue_#queue()
 {
     return new Promise(function (resolve, reject) {
-        connectTo#stoage-account();
+        connectTo#storage-account();
         #storage-account_queue.getMessages('#queue', function(error, results, response) {
             if (!error) {
                 var message = results[0];

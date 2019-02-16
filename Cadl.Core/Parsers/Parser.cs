@@ -70,10 +70,16 @@ namespace Cadl.Core.Parsers
         private void MapFunctionsToQueues()
         {
             var queues = factory.Components.OfType<Queue>();
-            foreach (var function in factory.Components.OfType<Function>()
-                .Where(f => f.Trigger == Trigger.Queue))
+            foreach (var function in factory.Components.OfType<Function>())
             {
-                function.TriggeringQueue = queues.First(q => q.ComponentName == function.TriggeringQueueName);
+                if (function.Trigger == Trigger.Queue)
+                {
+                    function.InputQueue = queues.First(q => q.ComponentName == function.InputQueueName);
+                }
+                if (function.OutputQueueName != null)
+                {
+                    function.OutputQueue = queues.First(q => q.ComponentName == function.OutputQueueName);
+                }
             }
         }
 

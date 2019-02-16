@@ -22,6 +22,7 @@ namespace Cadl.Core.Arctifact
         public string OutputPath { get; set; } 
         public string TfPath => $"{OutputPath}/tf";
         public string CodePath => $"{OutputPath}/code";
+        public string PackagePath => $"{OutputPath}/package";
         public Dictionary<string, object> Props { get; set; }
     }
 }

@@ -26,7 +26,7 @@ namespace Cadl.Core.Parsers
 
                 else if (index == 1)
                 {
-                    SetTrigger(line);
+                    SetInAndOut(line);
                 }
 
                 else if (index == 2)
@@ -97,13 +97,13 @@ namespace Cadl.Core.Parsers
             }
         }
 
-        private void SetTrigger(Line line)
+        private void SetInAndOut(Line line)
         {
             if (!line.PartsMoreThan(2))
             {
                 throw new ParsingException(new Error(Error.UnknownSyntax));
             }
-            else if (line.Parts[0] != "trigger")
+            else if (line.Parts[0] != "input")
             {
                 throw new ParsingException(new Error(Error.TriggerExpected));
             }
@@ -113,12 +113,12 @@ namespace Cadl.Core.Parsers
                 {
                     case "request":
                         function.Trigger = Trigger.Request;
-                        function.TriggeringMessage = line.Parts[2];
+                        function.InputMessage = line.Parts[2];
                         break;
                     case "queue":
                         function.Trigger = Trigger.Queue;
-                        function.TriggeringMessage = line.Parts[3];
-                        function.TriggeringQueueName = line.Parts[2];
+                        function.InputMessage = line.Parts[3];
+                        function.InputQueueName = line.Parts[2];
                         break;
                     case "timer":
                         function.Trigger = Trigger.Timer;
@@ -136,6 +136,11 @@ namespace Cadl.Core.Parsers
                         //+ int.Parse(periodParts[2])) * 60
                         //+ int.Parse(periodParts[3]);
                         break;
+                }
+
+                if (line.KeyExists("output"))
+                {
+                    function.OutputQueueName = line.Parts[line.Parts.IndexOf("output") + 1];
                 }
             }
         }

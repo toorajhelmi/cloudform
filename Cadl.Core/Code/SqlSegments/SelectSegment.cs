@@ -1,9 +1,17 @@
 ﻿using System.Linq;
 using System.Collections.Generic;
 using Cadl.Core.Components;
+using Cadl.Core.Extensions;
 
 namespace Cadl.Core.Code.SqlSegments
 {
+    public enum ReturnAs
+    {
+        Array,
+        Entity,
+        Scalar
+    }
+
     public class SelectSegment : Segment
     {
         private const string selectMethod = @"
@@ -12,11 +20,28 @@ async function #method-name(#parameters)
     return new Promise(function (resolve, reject) {
         var query = #sql;
         var request = new Request(query, function (err, rowCount, rows) {
-            console.log('Received ' + rowCount);
-            if (rows) {
-                if (#is-scalar) {
+            if (err) {
+                console.log(err);
+            }
+            else {
+                console.log('Received ' + rowCount);
+            }
+            if (rowCount > 0) {
+                if (#scalar) {
                     resolve(rows[0][0].value);
-                } else {
+                
+                } 
+                else if (#entity) {
+                    var columns = new Map();
+                    rows[0].forEach(function (column) {
+                        columns.set(column.metadata.colName, column.value);
+                    });
+                    var obj = Array.from(columns).reduce((obj, [key, value]) => (
+                        Object.assign(obj, { [key]: value }) 
+                      ), {});
+                    resolve(obj);
+                }
+                else {
                     var data = [];
                     rows.forEach(function (row) {
                         var columns = new Map();
@@ -56,7 +81,8 @@ async function #method-name(#parameters)
 }";
 
         public SelectSegment(int indentCount, string methodName, Sql sql, 
-            string statement, string assignTo, List<Parameter> parameters, bool isScalar = false)
+            string statement, string assignTo, List<Parameter> parameters, 
+            ReturnAs returnAs = ReturnAs.Array)
             : base(indentCount)
         {
             Requires.Add("var Request = require(\"tedious\").Request;");
@@ -65,7 +91,8 @@ async function #method-name(#parameters)
                 .Replace("#method-name", methodName)
                 .Replace("#sql", statement)
                 .Replace("#database", sql.DbName)
-                .Replace("#is-scalar", isScalar.ToString())
+                .Replace("#scalar", (returnAs == ReturnAs.Scalar).ToLowerString())
+                .Replace("#entity", (returnAs == ReturnAs.Entity).ToLowerString())
                 .Replace("#parameters", string.Join(',', parameters.Select(p => p.Name.Replace("@", ""))))
                 .Replace("#add-params", Helper.CreateParameters(parameters))); ;
 

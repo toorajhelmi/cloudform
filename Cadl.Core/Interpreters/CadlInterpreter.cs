@@ -11,7 +11,7 @@ namespace Cadl.Core.Interpreters
 {
     public class CadlInterpreter
     {
-        private const int indentationUnit = 4;
+        private const int indentationUnit = 3;
         private int methodCount;
         private List<Segment> segments = new List<Segment>();
         private List<Component> components;
@@ -269,20 +269,20 @@ namespace Cadl.Core.Interpreters
             }
             else if (function.Trigger == Trigger.Queue)
             {
-                argName = function.TriggeringMessage;
+                argName = function.InputMessage;
             }
 
             sb.Append($"module.exports = async function (context, {argName}) {{");
             sb.AppendLine();
             if (function.Trigger == Trigger.Request)
             {
-                sb.Append("if (!req || !req.body) {");
+                sb.Append(Indent("if (!req || !req.body) {", indentationUnit));
                 sb.AppendLine();
-                sb.Append(Indent($"return {function.TriggeringMessage} missing", indentationUnit));
+                sb.Append(Indent($"'return {function.InputMessage} missing'", indentationUnit));
                 sb.AppendLine();
-                sb.Append("}");
+                sb.Append(Indent("}", indentationUnit));
                 sb.AppendLine();
-                sb.Append(Indent($"var {function.TriggeringMessage} = req.body;", indentationUnit));
+                sb.Append(Indent($"var {function.InputMessage} = req.body;", indentationUnit));
                 sb.AppendLine();
             }
         }

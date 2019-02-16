@@ -8,7 +8,7 @@ namespace Cadl.Core.Code.Azure.QueueSegments
         private const string queueMessage = @"
 function enqueue_#queue(#message)
 {
-    connectTo#stoage-account();
+    connectTo#storage-account();
     #storage-account_queue.createMessage('#queue', JSON.stringify(#message), function(error) {
         if (!error) {
             // Message inserted
@@ -21,7 +21,7 @@ function enqueue_#queue(#message)
         {
             Dependencies.Add(new ConnectionSegment(indentCount, queue));
             Methods.Add(queueMessage
-                .Replace("#stoage-account", queue.StorageAccount)
+                .Replace("#storage-account", queue.StorageAccount)
                 .Replace("#queue", queue.QueueName)
                 .Replace("#message", message));
             FunctionCode = $"enqueue_{queue.QueueName}({message});";

@@ -10,11 +10,6 @@ namespace Cadl.Core.Code.SqlSegments
         {
             var addParams = new StringBuilder();
 
-            if (parameters.Any())
-            {
-                addParams.Append("request");
-            }
-
             foreach (var parameter in parameters)
             {
                 addParams.Append($"request.addParameter('{parameter.Name}', {parameter.Type}, {parameter.Name.Replace("@", "")});");

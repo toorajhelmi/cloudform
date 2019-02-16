@@ -32,7 +32,7 @@ namespace Cadl.Core.Code.Azure
         ""type"": ""queueTrigger"",
         ""direction"": ""in"",
         ""queueName"": ""#queue-name"",
-        ""connection"": ""#connection-string""
+        ""connection"": ""AZURE_STORAGE_CONNECTION_STRING""
     }";
 
         private const string timerTrigger = @"
@@ -55,8 +55,8 @@ namespace Cadl.Core.Code.Azure
             switch (function.Trigger)
             {
                 case Trigger.Queue:
-                    var queue = function.TriggeringQueue;
-                    Set(function.TriggeringMessage, queue.QueueName, 
+                    var queue = function.InputQueue;
+                    Set(function.InputMessage, queue.QueueName, 
                         queue.StorageAccount, function.Returns);
                     break;
                 case Trigger.Request:

@@ -65,11 +65,17 @@ namespace Cadl.Core.Interpreters
                         var cadlInterpreter = new CadlInterpreter();
 
                         props["name"] = function.FunctionName;
+                        if (function.OutputQueue != null)
+                        {
+                            props["q_sa_name"] = function.OutputQueue.StorageAccount;
+                        }
+
                         GenerateTf("function", function.ComponentName);
 
                         var js = cadlInterpreter.CompileToJs(function, factory.Components, props);
                         Directory.CreateDirectory($"{factory.CodePath}/{function.FunctionName}");
-                        File.WriteAllText($"{factory.CodePath}/{function.FunctionName}/index.js", js);
+                        Directory.CreateDirectory($"{factory.CodePath}/{function.FunctionName}/{Function.FolderName}");
+                        File.WriteAllText($"{factory.CodePath}/{function.FunctionName}/{Function.FolderName}/index.js", js);
                     }
                 }
             }

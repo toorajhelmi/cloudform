@@ -1,10 +1,11 @@
 ﻿//the first param is type of the component and second it the name of the deployed component
 //the lower case intake is the name of the component used to refer back to this component
 //within this script
-//trigger specifies what triggers the function which could be request or timer
+//input specifies what triggers the function which could be hhtp request, timer, or a queue
+//output specifies what queues receive messages from the function.
 //  -The request post body is placed in a variable called order
 component(Function, ProcessOrder) processOrder size:F
-    trigger(request, order)
+    input(request, order), output(paymentQueue)
 {
     //Runs a SQL SELECT statement on db 'Transaction' assigning the result is assigned to stock
     //Note that if result is a scalar (int, string, ...) you should use x = sql(Table) and if result 
@@ -33,11 +34,19 @@ component(Function, ProcessOrder) processOrder size:F
     
     if (stock - onHold >= order.Quantity)
     {
+        //Runs a SQL INSERT statement and assgined the new ID to order.Id
+        order.Id = sql(Transaction)
+        {
+            insert into [Order] (CustomerId, ItemId, Quantity, [Status])
+            output inserted.Id
+            values ([uniqueidentifier]@order.CustomerId, [int]@order.ItemId, [int]@order.Quantity, 1)
+        }
+        
         //Runs a SQL INSERT statement on db 'Transaction'
         sql(Transaction)
         {
-            insert into Hold (ItemId, Expiration, Quantity)
-            select [int]@order.ItemId, DATEADD(minute, 5, GETDATE()), [int]@order.Quantity
+            insert into Hold (OrderId, Expiration)
+            select [uniqueidentifier]@order.Id, DATEADD(minute, 5, GETDATE())
         }
         
         var newHold = onHold + order.Quantity;
@@ -48,14 +57,6 @@ component(Function, ProcessOrder) processOrder size:F
             update Inventory
             set OnHold = [int]@newHold
             where Id = [int]@order.ItemId
-        }
-        
-        //Runs a SQL INSERT statement and assgined the new ID to order.Id
-        order.Id = sql(Transaction)
-        {
-            insert into [Order] (CustomerId, ItemId, Quantity, [Status])
-            output inserted.#Id
-            values ([uniqueidentifier]@order.CustomerId, [int]@order.ItemId, [int]@order.Quantity, 1)
         }
                  
         enqueue(paymentQueue, order)
@@ -135,9 +136,8 @@ component(SQL, Transaction) transactions
     Table(Hold)
     [
         Id          uniqueIdentifier     not null  default NewId()    PRIMARY KEY,
-        ItemId      int                  not null,
-        Expiration  datetime             not null,
-        Quantity    int                  not null
+        OrderId     uniqueIdentifier     not null,
+        Expiration  datetime             not null
     ]
 }
 
@@ -145,7 +145,7 @@ component(Queue, payment) paymentQueue
 
 //Triggered when a new object is added to the payment queue.
 component(Function, ProcessPayment) processPayment size:F
-    trigger(queue, paymentQueue, order)
+    input(queue, paymentQueue, order), output(receiptQueue)
 {
     //Takes the object placed in the payment queue and assigns it to order
     //order = dequeue(paymentQueue)
@@ -164,12 +164,27 @@ component(Function, ProcessPayment) processPayment size:F
             set Status = 2
             where Id = [uniqueidentifier]@order.Id
         }
+        
+        //as ... is optional. Its instructs how the sql statement
+        //should return the result. If absent, an array is returd.
+        //Possible values for ''as'' are: 
+        //-array: returns array of objects [Item, Item, ...]
+        //-entity: returns a single object (e.g. item { Quanitity: 2})
+        //-scalar: return a scalar value (e.g. 3, 'door')
+        sql(Transaction, inventory) as entity
+        {
+            select Available, OnHold from Inventory
+            where ItemId = [int]@order.ItemId
+        } 
+        
+        var newAvailable = inventory.Available - order.Quantity;
+        var newHold = inventory.OnHold - order.Quantity;
+        
         sql(Transaction)
         {
             update Inventory
-            set Available = Available - [int]@order.Quantity,
-            Set OnHold = OnHold - [int]@order.Quantity
-            where Id = [int]@order.ItemId
+            set Available = [int]@newAvailable, OnHold = [int]@newHold
+            where ItemId = [int]@order.ItemId
         }
         enqueue(receiptQueue, order)
     }
@@ -182,10 +197,16 @@ component(Function, ProcessPayment) processPayment size:F
             where Id = [uniqueidentifier]@order.Id
         }
     }
+    
+    sql(Transaction)
+    {
+        delete Hold
+        where OrderId = [uniqueidentifier]@order.Id
+    }
 }
 
 component(Function, CheckHolds) checkHolds 
-    trigger(timer, 60) //Trigger every 60 seconds
+    input(timer, 60) //Trigger every 60 seconds
 {
     sql(Transaction, expiredHolds)
     {
@@ -201,12 +222,27 @@ component(Function, CheckHolds) checkHolds
     //not work
     expiredHolds.iterate((expiredHold) =>
     {
+        sql(Transaction, order)
+        {
+            select * from [Order]
+            where Id = [uniqueidentifier]@expiredHold.OrderId
+        }
+        
+        sql(Transaction, inventory)
+        {
+            select * from Inventory
+            where ItemId = [int]@order.ItemId
+        }
+        
+        var newHold = inventory.OnHold - order.Quantity;
+        
         sql(Transaction)
         {
             update Inventory 
-            set OnHold = OnHold - [int]@expiredHold.Quantity
-            where ItemId = [int]@expiredHold.ItemId
+            set OnHold = [int]newHold
+            where ItemId = [int]@inventory.ItemId
         }
+        
         sql(Transaction)
         {
             delete Hold
@@ -218,7 +254,7 @@ component(Function, CheckHolds) checkHolds
 component(Queue, receipt) receiptQueue
 
 component(Function, GenerateReceipt) generateReceipt size:F
-    trigger(queue, receiptQueue ,order)
+    input(queue, receiptQueue ,order)
 {
     //order = dequeue(receiptQueue)
     code(generateReceipt, order)

@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using System.Collections.Generic;
 using Cadl.Core.Components;
+using Cadl.Core.Extensions;
 
 namespace Cadl.Core.Code.SqlSegments
 {
@@ -15,8 +16,13 @@ async function #method-name(#parameters)
             err,
             rowCount,
             rows) {
-            console.log('Received ' + rowCount);
-                if (rows) {
+                if (err) {
+                    console.log(err);
+                }
+                else {
+                    console.log('Received ' + rowCount);
+                }
+                if (rowCount > 0) {
                     if (#returns-id) {
                         var id = rows[0][0].value;
                         console.log(id);
@@ -49,7 +55,7 @@ async function #method-name(#parameters)
 }";
 
         public InsertSegment(int indentCount, string methodName, Sql sql, 
-            string statement, string entityId, List<Parameter> parameters, bool returnsId)
+            string statement, string assignTo, List<Parameter> parameters, bool returnsId)
             : base(indentCount)
         {
             Requires.Add("var Request = require(\"tedious\").Request;");
@@ -58,12 +64,12 @@ async function #method-name(#parameters)
                 .Replace("#method-name", methodName)
                 .Replace("#sql", statement)
                 .Replace("#database", sql.DbName)
-                .Replace("#returns-id", returnsId.ToString())
+                .Replace("#returns-id", returnsId.ToLowerString())
                 .Replace("#parameters", string.Join(',', parameters.Select(p => p.Name.Replace("@", ""))))
                 .Replace("#add-params", Helper.CreateParameters(parameters)));
-            if (!string.IsNullOrWhiteSpace(entityId))
+            if (!string.IsNullOrWhiteSpace(assignTo))
             {
-                FunctionCode = $"{entityId} = await {methodName}({string.Join(',', parameters.Select(p => p.Value)).Trim()});";
+                FunctionCode = $"{assignTo} = await {methodName}({string.Join(',', parameters.Select(p => p.Value)).Trim()});";
             }
             else
             {

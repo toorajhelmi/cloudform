@@ -6,18 +6,18 @@ using System.Linq;
 using Cadl.Core.Arctifact;
 using Cadl.Core.Components;
 using Cadl.Core.Settings;
+using Cadl.Core.Extensions;
 
 namespace Cadl.Core.Deployers
 {
     public class Deployer
     {
+        private const string terraform = "terraform";
         protected Dictionary<string, object> config;
         protected Factory factory;
-        protected bool debug;
 
-        public Deployer(Factory factory, Dictionary<string, object> config, bool debug = false)
+        public Deployer(Factory factory, Dictionary<string, object> config)
         {
-            this.debug = debug;
             this.config = config;
             this.factory = factory;
         }
@@ -53,68 +53,20 @@ namespace Cadl.Core.Deployers
         {
             var canContinue = true;
 
-            var initProcess = new Process
-            {
-                StartInfo = new ProcessStartInfo
-                {
-                    WorkingDirectory = factory.TfPath,
-                    FileName = "terraform",
-                    RedirectStandardOutput = !debug,
-                    RedirectStandardError = !debug
-                }
-            };
-            initProcess.StartInfo.Arguments = "init";
-            initProcess.Start();
+            var initProcess = ProcessEx.Create(factory.TfPath, terraform, "init");
+            canContinue = initProcess.StopAtError();
 
-            if (!debug)
-            {
-                while (!initProcess.StandardError.EndOfStream)
-                {
-                    string line = initProcess.StandardError.ReadLine();
-                    if (line.IndexOf("Error") != -1)
-                    {
-                        canContinue = false;
-                        initProcess.Close();
-                        break;
-                    }
-                }
-            }
-
-            if (debug || canContinue)
+            if (ApplicationSettings.Debug || canContinue)
             {
                 initProcess.WaitForExit();
             }
 
             if (canContinue)
             {
-                var applyProcess = new Process
-                {
-                    StartInfo = new ProcessStartInfo
-                    {
-                        WorkingDirectory = factory.TfPath,
-                        FileName = "terraform",
-                        RedirectStandardOutput = !debug,
-                        RedirectStandardError = !debug
-                    }
-                };
-                applyProcess.StartInfo.Arguments = "apply -auto-approve";
-                applyProcess.Start();
+                var applyProcess = ProcessEx.Create(factory.TfPath, terraform, "apply -auto-approve");
+                canContinue = applyProcess.StopAtError();
 
-                if (!debug)
-                {
-                    while (!applyProcess.StandardError.EndOfStream)
-                    {
-                        string line = applyProcess.StandardError.ReadLine();
-                        if (line.IndexOf("Error") != -1)
-                        {
-                            canContinue = false;
-                            applyProcess.Close();
-                            break;
-                        }
-                    }
-                }
-
-                if (debug || canContinue)
+                if (ApplicationSettings.Debug || canContinue)
                 {
                     applyProcess.WaitForExit();
                 }

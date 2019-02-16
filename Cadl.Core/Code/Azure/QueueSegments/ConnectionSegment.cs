@@ -7,9 +7,10 @@ namespace Cadl.Core.Code.Azure.QueueSegments
     {
         private const string connect = @"
 function connectTo#storage-account() {
-    if (#storage-account_queue != null)
+    if (#storage-account_queue == null)
     {
         #storage-account_queue = azure.createQueueService(#connection-string);
+        qsae422502e984a466089992_queue.messageEncoder = null;
     }
 }";
         public ConnectionSegment(int indentCount, Queue queue)

@@ -15,24 +15,39 @@ namespace Cadl.Core.Interpreters
         {
             var db = "";
             var assignTo = "";
-            var isScalar = false;
+            var returnAs = ReturnAs.Array;
 
-            if (scope[0].Content.IndexOf('=') == -1 && scope[0].Parts.Count == 3)
+            if (scope[0].Content.Contains("as"))
+            {
+                scope[0].PartsEqualTo(5);
+                switch (scope[0].Parts[4])
+                {
+                    case "array": returnAs = ReturnAs.Array; break;
+                    case "entity": returnAs = ReturnAs.Entity; break;
+                    case "scalar": returnAs = ReturnAs.Scalar; break;
+                    default: throw new ParsingException(new Error(Error.InvalidReturnType));
+                }
+
+                db = scope[0].Parts[1];
+                assignTo = scope[0].Parts[2];
+
+            }
+            else if (scope[0].Content.IndexOf('=') == -1 && scope[0].Parts.Count == 3)
             {
                 db = scope[0].Parts[1];
                 assignTo = scope[0].Parts[2];
-                isScalar = false;
+                returnAs = ReturnAs.Array;
             }
             else if (scope[0].Content.IndexOf('=') == -1 && scope[0].Parts.Count == 2)
             {
                 db = scope[0].Parts[1];
-                isScalar = false;
+                returnAs = ReturnAs.Array;
             }
             else if (scope[0].Content.IndexOf('=') != -1 && scope[0].Parts.Count == 4)
             {
                 assignTo = scope[0].Parts[0];
                 db = scope[0].Parts[3];
-                isScalar = true;
+                returnAs = ReturnAs.Scalar;
             }
             else
             {
@@ -49,7 +64,7 @@ namespace Cadl.Core.Interpreters
                 var methodName = $"sql_select_{assignTo}_{methodCount++}";
                 statement = IncludeSqlParamers(statement, sql, out List<Parameter> parameters);
                 return new SelectSegment(indentCount, methodName, sql, statement, assignTo, parameters,
-                    isScalar);
+                    returnAs);
             }
             else if (scope[2].Content.Contains("insert"))
             {

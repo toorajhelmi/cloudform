@@ -47,7 +47,7 @@ namespace Cadl.Core
             switch (cloud)
             {
                 case TargetCloud.Azure: deployer = new AzureDeployer(factory, azureConfig, true); break;
-                default: deployer = new Deployer(factory, azureConfig, true); break;
+                default: deployer = new Deployer(factory, azureConfig); break;
             }
 
             deployer.Deploy();
