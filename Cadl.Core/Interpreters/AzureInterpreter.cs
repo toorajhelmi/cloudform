@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using Cadl.Core.Arctifact;
+using Cadl.Core.Code;
 using Cadl.Core.Code.Azure;
 using Cadl.Core.Components;
 using Cadl.Core.Extensions;
@@ -72,10 +73,15 @@ namespace Cadl.Core.Interpreters
 
                         GenerateTf("function", function.ComponentName);
 
-                        var js = cadlInterpreter.CompileToJs(function, factory.Components, props);
+                        var functionFolder = $"{factory.CodePath}/{function.FunctionName}/{Function.FolderName}";
                         Directory.CreateDirectory($"{factory.CodePath}/{function.FunctionName}");
-                        Directory.CreateDirectory($"{factory.CodePath}/{function.FunctionName}/{Function.FolderName}");
-                        File.WriteAllText($"{factory.CodePath}/{function.FunctionName}/{Function.FolderName}/index.js", js);
+                        Directory.CreateDirectory(functionFolder);
+
+                        var js = cadlInterpreter.CompileToJs(function, factory.Components, props);
+                        File.WriteAllText($"{functionFolder}/index.js", js);
+
+                        var packageGeneratpr = new PackageGenerator(function.FunctionName, cadlInterpreter.DependsOnModules);
+                        File.WriteAllText($"{factory.CodePath}/{function.FunctionName}/package.json", packageGeneratpr.Package);
                     }
                 }
             }

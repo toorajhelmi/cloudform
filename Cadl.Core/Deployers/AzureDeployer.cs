@@ -20,14 +20,9 @@ namespace Cadl.Core.Deployers
         {
         }
 
-        protected override bool DeployCloudSpecific()
+        protected override void DeployCloudSpecific()
         {
-            var canContinue = SetQueueConnectionString();
-
-            if (!canContinue)
-            {
-                return false;
-            }
+            SetQueueConnectionString();
 
             foreach (var function in factory.Components.OfType<Function>())
             {
@@ -35,15 +30,11 @@ namespace Cadl.Core.Deployers
                 AddHostFile($"{factory.CodePath}/{function.FunctionName}");
             }
 
-            canContinue = DeployCode();
-
-            return canContinue;
+            DeployCode();
         }
 
-        private bool SetQueueConnectionString()
+        private void SetQueueConnectionString()
         {
-            var canContinue = true;
-
             //Retrieve properites like connection string
             foreach (var queue in factory.Components.OfType<Queue>())
             {
@@ -78,20 +69,12 @@ namespace Cadl.Core.Deployers
                         string line = outputProcess.StandardError.ReadLine();
                         if (line.IndexOf("Error", StringComparison.InvariantCultureIgnoreCase) != -1)
                         {
-                            canContinue = false;
                             outputProcess.Close();
-                            break;
+                            throw new DeployingException(DeployingException.QueueConnectionFailed, queue.QueueName);
                         }
                     }
                 }
-
-                if (!canContinue)
-                {
-                    break;
-                }
             }
-
-            return canContinue;
         }
 
         private void AddFunctionBinding(Function function)
@@ -108,37 +91,43 @@ namespace Cadl.Core.Deployers
                 }");
         }
 
-        private bool DeployCode()
+        private void InstallModules(string functionFolder)
+        {
+            var installProcess = ProcessEx.Create(functionFolder, "npm", "install");
+            if (!installProcess.StopAtError())
+            {
+                throw new DeployingException(DeployingException.ModuleInstallationFailed);
+            }
+        }
+
+        private void DeployCode()
         {
             //az login --service-principal -u "http://my-app" -p <password> --tenant <tenant>
             var loginProcess = ProcessEx.Create(factory.CodePath, az,
                 $"login --service-principal -u {config["client_id"]} -p {config["client_secret"]} --tenant {config["tenant_id"]}");
-            var succedeed = loginProcess.StopAtError();
-
-            if (!succedeed)
+            if (!loginProcess.StopAtError())
             {
-                return false;
+                throw new DeployingException(DeployingException.AzureLoginFailed);
             }
 
             Directory.CreateDirectory(factory.PackagePath);
 
-            var succeeded = true;
             foreach (var function in factory.Components.OfType<Function>())
             {
+                var functionFolder = $"{factory.CodePath}/{function.FunctionName}";
+                InstallModules(functionFolder);
+
                 //az functionapp deployment source config-zip -g test -n test1543  --src /Users/Tooraj/MyFunctionProj/HttpTrigger.zip
                 var packagePath = $"{factory.PackagePath}/{function.FunctionName}.zip";
                 ZipFile.CreateFromDirectory($"{factory.CodePath}/{function.FunctionName}", packagePath);
                 var rg = config["resource_group"];
                 var pushCodeProcess = ProcessEx.Create(factory.CodePath, az,
                     $"functionapp deployment source config-zip -g {rg} -n {function.FunctionName}  --src {packagePath}");
-                succedeed = pushCodeProcess.StopAtError();
-                if (!succedeed)
+                if (!pushCodeProcess.StopAtError())
                 {
-                    break;
+                    throw new DeployingException(DeployingException.CodePushFailed);
                 }
             }
-            return succedeed;
-
         }
     }
 }

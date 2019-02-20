@@ -85,8 +85,9 @@ async function #method-name(#parameters)
             ReturnAs returnAs = ReturnAs.Array)
             : base(indentCount)
         {
-            Requires.Add("var Request = require(\"tedious\").Request;");
-            Dependencies.Add(new ConnectionSegement(indentCount, sql));
+            Requires.Add("var Request = require('tedious').Request;");
+            DependsOnSegments.Add(new ConnectionSegement(indentCount, sql));
+            DependsOnModules.Add("\"tedious\": \"5.0.3\"");
             Methods.Add(selectMethod
                 .Replace("#method-name", methodName)
                 .Replace("#sql", statement)

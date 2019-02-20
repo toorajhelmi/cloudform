@@ -18,6 +18,7 @@ function connectTo#storage-account() {
         {
             Name = $"{queue.StorageAccount}_queue";
             Requires.Add("var azure = require('azure-storage');");
+            DependsOnModules.Add("\"azure-storage\": \"2.10.2\"");
             GlobalVars.Add($"var {queue.StorageAccount}_queue;");
 
             Methods.Add(connect

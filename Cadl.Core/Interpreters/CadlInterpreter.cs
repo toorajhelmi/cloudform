@@ -19,6 +19,8 @@ namespace Cadl.Core.Interpreters
         private Function function;
         private int indentCount = 1;
 
+        public List<string> DependsOnModules { get; set; } = new List<string>();
+
         public string CompileToJs(Function function, List<Component> components, Dictionary<string, object> props)
         {
             this.function = function;
@@ -144,7 +146,7 @@ namespace Cadl.Core.Interpreters
             var globalVars = new List<string>();
             var methods = new List<string>();
 
-            var dependencies = segments.SelectMany(s => s.Dependencies).GroupBy(d => d.Name);
+            var dependencies = segments.SelectMany(s => s.DependsOnSegments).GroupBy(d => d.Name);
 
             foreach (var dependency in dependencies)
             {
@@ -169,6 +171,14 @@ namespace Cadl.Core.Interpreters
                 foreach (var method in segment.Methods)
                 {
                     methods.Add(method);
+                }
+
+                foreach (var module in segment.DependsOnModules)
+                {
+                    if (!DependsOnModules.Contains(module))
+                    {
+                        DependsOnModules.Add(module);
+                    }
                 }
             }
 

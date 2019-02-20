@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using Cadl.Core.Components;
-using Cadl.Core.Interpreters;
+﻿using Cadl.Core.Components;
 
 namespace Cadl.Core.Code.SqlSegments
 {
@@ -32,8 +29,8 @@ function connectTo#database() {
             Name = $"{sql.DbName}_connection";
             GlobalVars.Add($"var {sql.DbName}_connection;");
             GlobalVars.Add($"var {sql.DbName}_connected = false;");
-            Requires.Add("var Connection = require('tedious').Connection;");
             Requires.Add("var TYPES = require('tedious').TYPES;");
+            DependsOnModules.Add("\"tedious\": \"5.0.3\"");
 
             Methods.Add(connect
                 .Replace("#username", sql.Username)

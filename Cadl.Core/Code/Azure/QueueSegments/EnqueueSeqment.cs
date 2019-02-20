@@ -19,7 +19,7 @@ function enqueue_#queue(#message)
         public EnqueueSeqment(int indentCount, Queue queue, string message)
             : base(indentCount)
         {
-            Dependencies.Add(new ConnectionSegment(indentCount, queue));
+            DependsOnSegments.Add(new ConnectionSegment(indentCount, queue));
             Methods.Add(queueMessage
                 .Replace("#storage-account", queue.StorageAccount)
                 .Replace("#queue", queue.QueueName)

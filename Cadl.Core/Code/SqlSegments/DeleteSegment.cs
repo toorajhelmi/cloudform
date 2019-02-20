@@ -40,8 +40,9 @@ async function #method-name(#parameters)
             List<Parameter> parameters)
             : base(indentCount)
         {
-            Requires.Add("var Request = require(\"tedious\").Request;");
-            Dependencies.Add(new ConnectionSegement(indentCount, sql));
+            Requires.Add("var Request = require('tedious').Request;");
+            DependsOnSegments.Add(new ConnectionSegement(indentCount, sql));
+            DependsOnModules.Add("\"tedious\": \"5.0.3\"");
             Methods.Add(updateMethod
                 .Replace("#method-name", methodName)
                 .Replace("#sql", statement)

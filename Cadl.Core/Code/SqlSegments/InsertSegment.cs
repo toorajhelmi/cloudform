@@ -58,8 +58,9 @@ async function #method-name(#parameters)
             string statement, string assignTo, List<Parameter> parameters, bool returnsId)
             : base(indentCount)
         {
-            Requires.Add("var Request = require(\"tedious\").Request;");
-            Dependencies.Add(new ConnectionSegement(indentCount, sql));
+            Requires.Add("var Request = require('tedious').Request;");
+            DependsOnSegments.Add(new ConnectionSegement(indentCount, sql));
+            DependsOnModules.Add("\"tedious\": \"5.0.3\"");
             Methods.Add(insertMethod
                 .Replace("#method-name", methodName)
                 .Replace("#sql", statement)

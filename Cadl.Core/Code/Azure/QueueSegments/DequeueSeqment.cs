@@ -34,7 +34,7 @@ function dequeue_#queue()
         public DequeueSeqment(int indentCount, Queue queue, string output)
             :  base(indentCount)
         {
-            Dependencies.Add(new ConnectionSegment(indentCount, queue));
+            DependsOnSegments.Add(new ConnectionSegment(indentCount, queue));
             Methods.Add(queueMessage
                 .Replace("#stoage-account", queue.StorageAccount)
                 .Replace("#queue", queue.QueueName));
