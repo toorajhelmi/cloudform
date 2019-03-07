@@ -4,19 +4,19 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using Cadl.Core.Arctifact;
-using Cadl.Core.Code.Azure;
-using Cadl.Core.Components;
-using Cadl.Core.Extensions;
-using Cadl.Core.Settings;
+using Cloudform.Core.Arctifact;
+using Cloudform.Core.Code.Azure;
+using Cloudform.Core.Components;
+using Cloudform.Core.Extensions;
+using Cloudform.Core.Settings;
 
-namespace Cadl.Core.Deployers
+namespace Cloudform.Core.Deployers
 {
     public class AzureDeployer : Deployer
     {
         private const string az = "az";
-        public AzureDeployer(Factory factory, Dictionary<string, object> config, bool debug = false)
-            : base(factory, config)
+        public AzureDeployer(Factory factory, bool debug = false)
+            : base(factory)
         {
         }
 

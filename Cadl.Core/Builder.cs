@@ -2,13 +2,13 @@
 using System.Linq;
 using System.Collections.Generic;
 using System.IO;
-using Cadl.Core.Deployers;
-using Cadl.Core.Interpreters;
-using Cadl.Core.Extensions;
-using Cadl.Core.Arctifact;
-using Cadl.Core.Settings;
+using Cloudform.Core.Deployers;
+using Cloudform.Core.Interpreters;
+using Cloudform.Core.Extensions;
+using Cloudform.Core.Arctifact;
+using Cloudform.Core.Settings;
 
-namespace Cadl.Core
+namespace Cloudform.Core
 {
     public class Builder
     {
@@ -16,22 +16,23 @@ namespace Cadl.Core
         {
             var cloudConfiguration = new CloudConfiguration();
             Console.WriteLine("> Parsing Script");
-            var parser = new Cadl.Core.Parsers.Parser();
+            var parser = new Cloudform.Core.Parsers.Parser();
             parser.Parse(factory);
 
             Interpreter interpreter = null;
             var cloud = TargetCloud.Azure;
 
-            var azureConfig = DictionaryEx.Combine(
-                cloudConfiguration.GlobalConfig,
-                cloudConfiguration.AzureConfig,
-                factory.Props);
+            //var azureConfig = DictionaryEx.Combine(
+                //cloudConfiguration.GlobalConfig,
+                //cloudConfiguration.AzureConfig,
+                //factory.Props);
+
 
             switch (cloud)
             {
-                case TargetCloud.Azure: interpreter = new AzureInterpreter(factory, azureConfig); break;
-                case TargetCloud.Aws: interpreter = new AwsIntepreter(factory, null); break;
-                case TargetCloud.Gcp: interpreter = new GcpInterpreter(factory, null); break;
+                case TargetCloud.Azure: interpreter = new AzureInterpreter(factory); break;
+                case TargetCloud.Aws: interpreter = new AwsIntepreter(factory); break;
+                case TargetCloud.Gcp: interpreter = new GcpInterpreter(factory); break;
             }
 
             if (Directory.Exists(factory.OutputPath))
@@ -39,15 +40,14 @@ namespace Cadl.Core
                 Directory.Delete(factory.OutputPath, true);
             }
 
-            Directory.CreateDirectory(factory.OutputPath);
+            var dirInfo = Directory.CreateDirectory(factory.OutputPath);
 
             interpreter.Interpret();
 
             Deployer deployer = null;
             switch (cloud)
             {
-                case TargetCloud.Azure: deployer = new AzureDeployer(factory, azureConfig, true); break;
-                default: deployer = new Deployer(factory, azureConfig); break;
+                case TargetCloud.Azure: deployer = new AzureDeployer(factory, true); break;
             }
 
             deployer.Deploy();

@@ -1,12 +1,12 @@
 ﻿using System.Linq;
 using System.Collections.Generic;
 using System.Text;
-using Cadl.Core.Code;
-using Cadl.Core.Code.SqlSegments;
-using Cadl.Core.Components;
-using Cadl.Core.Parsers;
+using Cloudform.Core.Code;
+using Cloudform.Core.Code.SqlSegments;
+using Cloudform.Core.Components;
+using Cloudform.Core.Parsers;
 
-namespace Cadl.Core.Interpreters
+namespace Cloudform.Core.Interpreters
 {
     public class SqlInterpreter
     {

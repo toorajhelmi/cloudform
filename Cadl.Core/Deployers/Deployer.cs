@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using Cadl.Core.Arctifact;
-using Cadl.Core.Components;
-using Cadl.Core.Settings;
-using Cadl.Core.Extensions;
+using Cloudform.Core.Arctifact;
+using Cloudform.Core.Components;
+using Cloudform.Core.Extensions;
+using Cloudform.Core.Settings;
 
-namespace Cadl.Core.Deployers
+namespace Cloudform.Core.Deployers
 {
     public class Deployer
     {
@@ -16,9 +15,9 @@ namespace Cadl.Core.Deployers
         protected Dictionary<string, object> config;
         protected Factory factory;
 
-        public Deployer(Factory factory, Dictionary<string, object> config)
+        public Deployer(Factory factory)
         {
-            this.config = config;
+            this.config = factory.Props;
             this.factory = factory;
         }
 

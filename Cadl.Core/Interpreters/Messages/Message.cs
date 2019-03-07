@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Linq;
 using System.Collections.Generic;
-using Cadl.Core.Parsers;
+using Cloudform.Core.Parsers;
 
-namespace Cadl.Core.Interpreters.Messages
+namespace Cloudform.Core.Interpreters.Messages
 {
     public class Message
     {

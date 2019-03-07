@@ -8,9 +8,9 @@
         <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
     </PropertyGroup>
     <ItemGroup>
-        <ProjectReference Include="..\Cadl.Core\Cadl.Core.csproj" />
+        <Folder Include="Samples\" />
     </ItemGroup>
     <ItemGroup>
-        <Folder Include="Samples\" />
+      <ProjectReference Include="..\Cadl.Core\Cloudform.Core.csproj" />
     </ItemGroup>
 </Project>

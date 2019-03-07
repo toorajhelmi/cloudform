@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Linq;
 using System.Collections.Generic;
-using Cadl.Core.Parsers;
-using Cadl.Core.Extensions;
+using Cloudform.Core.Parsers;
+using Cloudform.Core.Extensions;
 
-namespace Cadl.Core.Code
+namespace Cloudform.Core.Code
 {
     public class IterationSegment : Segment
     {

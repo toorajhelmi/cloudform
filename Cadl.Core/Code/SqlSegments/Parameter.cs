@@ -1,5 +1,5 @@
 ﻿using System;
-namespace Cadl.Core.Code.SqlSegments
+namespace Cloudform.Core.Code.SqlSegments
 {
     public class Parameter
     {

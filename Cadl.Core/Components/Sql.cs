@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Cadl.Core.Components
+namespace Cloudform.Core.Components
 {
     public enum SqlType
     {

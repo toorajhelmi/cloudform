@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Cadl.Core.Parsers
+namespace Cloudform.Core.Parsers
 {
     public class Line
     {

@@ -1,9 +1,9 @@
 ﻿using System.Linq;
 using System.Collections.Generic;
-using Cadl.Core.Components;
-using Cadl.Core.Extensions;
+using Cloudform.Core.Components;
+using Cloudform.Core.Extensions;
 
-namespace Cadl.Core.Code.SqlSegments
+namespace Cloudform.Core.Code.SqlSegments
 {
     public enum ReturnAs
     {

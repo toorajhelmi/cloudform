@@ -1,8 +1,8 @@
 ﻿using System.Linq;
 using System.Collections.Generic;
-using Cadl.Core.Components;
+using Cloudform.Core.Components;
 
-namespace Cadl.Core.Parsers
+namespace Cloudform.Core.Parsers
 {
     public class SqlParser : ComponentParser
     {

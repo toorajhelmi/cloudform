@@ -1,20 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
-using Cadl.Core.Arctifact;
-using Cadl.Core.Components;
-using Cadl.Core.Extensions;
-using Cadl.Core.Interpreters.Messages;
+using Cloudform.Core.Arctifact;
+using Cloudform.Core.Components;
+using Cloudform.Core.Extensions;
+using Cloudform.Core.Interpreters.Messages;
 
-namespace Cadl.Core.Interpreters
+namespace Cloudform.Core.Interpreters
 {
     public abstract class Interpreter
     {
         protected Dictionary<string, object> props;
         protected Factory factory;
 
-        public Interpreter(Factory factory, Dictionary<string, object> config)
+        public Interpreter(Factory factory)
         {
-            props = config.Copy();
+            props = factory.Props.Copy();
             this.factory = factory;
         }
 

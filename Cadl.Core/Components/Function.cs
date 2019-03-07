@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using Cadl.Core.Parsers;
+using Cloudform.Core.Parsers;
 
-namespace Cadl.Core.Components
+namespace Cloudform.Core.Components
 {
     public enum Trigger
     {

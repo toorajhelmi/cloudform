@@ -1,5 +1,5 @@
 ﻿using System;
-namespace Cadl.Core.Parsers
+namespace Cloudform.Core.Parsers
 {
     public class Error
     {

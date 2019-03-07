@@ -116,8 +116,7 @@ component(SQL, Transaction) transactions
         Name        varchar(50)          not null
     ]
     {
-        (StatusId, Name) 
-        Values
+        insert into (StatusId, Name) values
             (1, 'Pending Payment'),
             (2, 'Pending Receipt'),
             (3, 'Payment Declined'),
@@ -147,12 +146,9 @@ component(Queue, payment) paymentQueue
 component(Function, ProcessPayment) processPayment size:F
     input(queue, paymentQueue, order), output(receiptQueue)
 {
-    //Takes the object placed in the payment queue and assigns it to order
-    //order = dequeue(paymentQueue)
-    
     //code will place a placeholder function to be field by the developer.
     //-1st arg is the name of the function
-    //-The rest are inputs tp the function
+    //-The rest are inputs to the function
     //-Returned value is assiged to a variable called processed
     processed = code(processPayment, order)
     

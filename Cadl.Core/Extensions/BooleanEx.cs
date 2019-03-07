@@ -1,5 +1,5 @@
 ﻿using System;
-namespace Cadl.Core.Extensions
+namespace Cloudform.Core.Extensions
 {
     public static class BooleanEx
     {

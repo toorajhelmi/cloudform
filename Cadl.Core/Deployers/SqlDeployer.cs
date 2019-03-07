@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Text;
-using Cadl.Core.Components;
+using Cloudform.Core.Components;
 
-namespace Cadl.Core.Deployers
+namespace Cloudform.Core.Deployers
 {
     public class SqlDeployer
     {

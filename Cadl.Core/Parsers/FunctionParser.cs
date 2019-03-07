@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Linq;
 using System.Collections.Generic;
-using Cadl.Core.Components;
-using Cadl.Core.Specs;
-using Cadl.Core.Extensions;
+using Cloudform.Core.Components;
+using Cloudform.Core.Specs;
+using Cloudform.Core.Extensions;
 
-namespace Cadl.Core.Parsers
+namespace Cloudform.Core.Parsers
 {
     public class FunctionParser : ComponentParser
     {

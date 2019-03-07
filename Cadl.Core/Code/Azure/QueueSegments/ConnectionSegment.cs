@@ -1,7 +1,7 @@
 ﻿using System;
-using Cadl.Core.Components;
+using Cloudform.Core.Components;
 
-namespace Cadl.Core.Code.Azure.QueueSegments
+namespace Cloudform.Core.Code.Azure.QueueSegments
 {
     public class ConnectionSegment : Segment
     {

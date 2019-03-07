@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Cadl.Core.Extensions
+namespace Cloudform.Core.Extensions
 {
     public static class DictionaryEx
     {

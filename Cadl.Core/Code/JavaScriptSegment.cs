@@ -1,5 +1,5 @@
 ﻿using System;
-namespace Cadl.Core.Code
+namespace Cloudform.Core.Code
 {
     public class JavaScriptSegment : Segment
     {

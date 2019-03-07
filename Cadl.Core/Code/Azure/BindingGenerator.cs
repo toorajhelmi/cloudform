@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Text;
-using Cadl.Core.Components;
-using Cadl.Core.Parsers;
+using Cloudform.Core.Components;
+using Cloudform.Core.Parsers;
 
-namespace Cadl.Core.Code.Azure
+namespace Cloudform.Core.Code.Azure
 {
     public class BindingGenerator
     {

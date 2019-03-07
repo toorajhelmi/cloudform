@@ -1,6 +1,6 @@
 ﻿using System.Linq;
 
-namespace Cadl.Core.Extensions
+namespace Cloudform.Core.Extensions
 {
     public static class StringEx
     {

@@ -1,17 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using Cadl.Core.Components;
-using Cadl.Core.Interpreters.Messages;
+using Cloudform.Core.Components;
+using Cloudform.Core.Interpreters.Messages;
 
-namespace Cadl.Core.Arctifact
+namespace Cloudform.Core.Arctifact
 {
     public class Factory
     {
         public Factory()
         {
-            Props = new Dictionary<string, object> {
-                    { "resource_group", "rg3245" },
-                    { "region", "westus2" } };
             OutputPath = "/Users/Tooraj/Documents/CADL/output"; 
         }
 

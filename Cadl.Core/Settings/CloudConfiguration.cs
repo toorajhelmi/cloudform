@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Cadl.Core.Settings
+namespace Cloudform.Core.Settings
 {
     public enum TargetCloud
     {

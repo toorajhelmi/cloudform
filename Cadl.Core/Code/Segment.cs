@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Cadl.Core.Code
+namespace Cloudform.Core.Code
 {
     public class Segment
     {

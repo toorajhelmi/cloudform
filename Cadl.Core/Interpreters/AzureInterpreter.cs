@@ -1,22 +1,20 @@
-﻿using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
 using System.Linq;
 using System.Net;
 using System.Reflection;
-using Cadl.Core.Arctifact;
-using Cadl.Core.Code;
-using Cadl.Core.Code.Azure;
-using Cadl.Core.Components;
-using Cadl.Core.Extensions;
+using Cloudform.Core.Arctifact;
+using Cloudform.Core.Code;
+using Cloudform.Core.Components;
+using Cloudform.Core.Extensions;
 
-namespace Cadl.Core.Interpreters
+namespace Cloudform.Core.Interpreters
 {
     public class AzureInterpreter : Interpreter
     {
         private const int maxNameLength = 24;
 
-        public AzureInterpreter(Factory factory, Dictionary<string, object> config)
-            : base(factory, config)
+        public AzureInterpreter(Factory factory)
+            : base(factory)
         {
         }
 
@@ -138,7 +136,7 @@ namespace Cadl.Core.Interpreters
             props["tf_name"] = props["name"].ToString().ToLower();
 
             var assembly = this.GetType().GetTypeInfo().Assembly;
-            using (var resource = assembly.GetManifestResourceStream($"Cadl.Core.TF.Azure.{templateName}.txt"))
+            using (var resource = assembly.GetManifestResourceStream($"Cloudform.Core.TF.Azure.{templateName}.txt"))
             {
                 using (var sr = new StreamReader(resource))
                 {

@@ -1,8 +1,8 @@
 ﻿using System.Linq;
 using System.Collections.Generic;
-using Cadl.Core.Components;
+using Cloudform.Core.Components;
 
-namespace Cadl.Core.Code.SqlSegments
+namespace Cloudform.Core.Code.SqlSegments
 {
     public class UpdateSegment : Segment
     {

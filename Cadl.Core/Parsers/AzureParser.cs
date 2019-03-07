@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Linq;
-using Cadl.Core.Components;
+using Cloudform.Core.Components;
 
-namespace Cadl.Core.Parsers
+namespace Cloudform.Core.Parsers
 {
     public class AzureParser : Parser
     {

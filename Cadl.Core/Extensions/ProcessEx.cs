@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Diagnostics;
-using Cadl.Core.Settings;
+using Cloudform.Core.Settings;
 
-namespace Cadl.Core.Extensions
+namespace Cloudform.Core.Extensions
 {
     public static class ProcessEx
     {

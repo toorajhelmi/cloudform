@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Cadl.Core.Arctifact;
-using Cadl.Core.Components;
+using Cloudform.Core.Arctifact;
+using Cloudform.Core.Components;
 
-namespace Cadl.Core.Parsers
+namespace Cloudform.Core.Parsers
 {
     public class Parser
     {

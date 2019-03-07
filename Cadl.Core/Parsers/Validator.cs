@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 
-namespace Cadl.Core.Parsers
+namespace Cloudform.Core.Parsers
 {
     public class Validator
     {

@@ -1,9 +1,9 @@
 ﻿using System;
 using System.IO;
-using Cadl.Core.Code;
-using Cadl.Core.Components;
+using Cloudform.Core.Code;
+using Cloudform.Core.Components;
 
-namespace Cadl.Core.Deployers
+namespace Cloudform.Core.Deployers
 {
     public class FunctionDeployer
     {
@@ -37,7 +37,7 @@ namespace Cadl.Core.Deployers
         private static void CopyFile(string sourcePath, string sourceName, string outputPath)
         {
             var assembly = typeof(FunctionDeployer).Assembly;
-            using (var resource = assembly.GetManifestResourceStream($"Cadl.Core.Code.{sourcePath}.{sourceName}"))
+            using (var resource = assembly.GetManifestResourceStream($"Cloudform.Core.Code.{sourcePath}.{sourceName}"))
             {
                 using (var sr = new StreamReader(resource))
                 {

@@ -1,5 +1,5 @@
 ﻿using System;
-namespace Cadl.Core.Components
+namespace Cloudform.Core.Components
 {
     public class Queue : Component
     {

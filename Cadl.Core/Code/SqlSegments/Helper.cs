@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Cadl.Core.Code.SqlSegments
+namespace Cloudform.Core.Code.SqlSegments
 {
     public static class Helper
     {

@@ -1,5 +1,5 @@
 ﻿using System;
-namespace Cadl.Core.Settings
+namespace Cloudform.Core.Settings
 {
     public static class ApplicationSettings
     {

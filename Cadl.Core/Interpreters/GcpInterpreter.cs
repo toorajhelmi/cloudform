@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using Cadl.Core.Arctifact;
+using Cloudform.Core.Arctifact;
 
-namespace Cadl.Core.Interpreters
+namespace Cloudform.Core.Interpreters
 {
     public class GcpInterpreter : Interpreter
     {
-        public GcpInterpreter(Factory factory, Dictionary<string, object> config)
-            : base(factory, config)
+        public GcpInterpreter(Factory factory)
+            : base(factory)
         {
         }
 

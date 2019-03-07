@@ -1,13 +1,13 @@
 ﻿using System.Linq;
 using System.Collections.Generic;
 using System.Text;
-using Cadl.Core.Parsers;
-using Cadl.Core.Code;
-using Cadl.Core.Components;
-using Cadl.Core.Code.Azure.QueueSegments;
+using Cloudform.Core.Parsers;
+using Cloudform.Core.Code;
+using Cloudform.Core.Components;
+using Cloudform.Core.Code.Azure.QueueSegments;
 using System;
 
-namespace Cadl.Core.Interpreters
+namespace Cloudform.Core.Interpreters
 {
     public class CadlInterpreter
     {
@@ -245,7 +245,7 @@ namespace Cadl.Core.Interpreters
 
                 if (jump == 1)
                 {
-                    if (line.EnsureBeginScope()) ;
+                    if (line.EnsureBeginScope());
                 }
 
                 if (line.Parts[0].IndexOf('{') != -1)

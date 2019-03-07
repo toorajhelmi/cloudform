@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Cadl.Core.Specs
+namespace Cloudform.Core.Specs
 {
     public class DefinedSpecs
     {
