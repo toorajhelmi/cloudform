@@ -1,20 +1,32 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
-using System.Text;
+using Cloudform.Core.Arctifact;
 using Cloudform.Core.Components;
+using Cloudform.Core.Reporting;
 
 namespace Cloudform.Core.Deployers
 {
     public class SqlDeployer
     {
-        public static void PopulateSql(Sql sql, Dictionary<string, object> credentials)
+        private Sql sql;
+        private Factory factory;
+        private IEventLogger eventLogger;
+
+        public SqlDeployer(Sql sql, Factory factory, IEventLogger eventLogger)
+        {
+            this.sql = sql;
+            this.factory = factory;
+            this.eventLogger = eventLogger;
+        }
+
+        public void PopulateSql()
         {
             var cb = new SqlConnectionStringBuilder
             {
                 DataSource = $"{sql.ServerName}.database.windows.net",
-                UserID = credentials["sql_admin"].ToString(),
-                Password = credentials["sql_password"].ToString(),
+                UserID = sql.Username,
+                Password = sql.Password,
                 InitialCatalog = $"{sql.DbName}"
             };
 
@@ -43,14 +55,14 @@ namespace Cloudform.Core.Deployers
                         }
                         catch (Exception x)
                         {
-                            Console.WriteLine($"Creating table '{table.Name}' failed.\nError: {x.Message}");
+                            eventLogger.Log(factory.BuildId, $"Creating table '{table.Name}' failed.\nError: {x.Message}");
                         }
                     }
                 }
             }
             catch (Exception x)
             {
-                Console.WriteLine($"Creating the DB '{sql.DbName}' failed.\nError: {x.Message}");
+                eventLogger.Log(factory.BuildId, $"Creating the DB '{sql.DbName}' failed.\nError: {x.Message}");
             }
         }
 
@@ -71,7 +83,7 @@ namespace Cloudform.Core.Deployers
                 {table.Inserts};";
         }
 
-        private static void SubmitNonQuery(
+        private void SubmitNonQuery(
             SqlConnection connection,
             string tsqlPurpose,
             string tsqlSourceCode,
@@ -79,9 +91,9 @@ namespace Cloudform.Core.Deployers
             string parameterValue = null
             )
         {
-            Console.WriteLine();
-            Console.WriteLine("=================================");
-            Console.WriteLine("T-SQL to {0}...", tsqlPurpose);
+            eventLogger.NextLine(factory.BuildId);
+            eventLogger.Log(factory.BuildId, "=================================");
+            eventLogger.Log(factory.BuildId, $"T-SQL to {tsqlPurpose}...");
 
             using (var command = new SqlCommand(tsqlSourceCode, connection))
             {
@@ -92,7 +104,7 @@ namespace Cloudform.Core.Deployers
                         parameterValue);
                 }
                 int rowsAffected = command.ExecuteNonQuery();
-                Console.WriteLine(rowsAffected + " = rows affected.");
+                eventLogger.Log(factory.BuildId, $"{rowsAffected} = rows affected.");
             }
         }
     }

@@ -20,8 +20,11 @@ namespace Cloudform.Core.Parsers
                 {
                     SetSqlName(line);
                 }
-
                 else if (index == 1)
+                {
+                    SetSqlCredentials(line);
+                }
+                else if (index == 2)
                 {
                     if (line.Parts[0].IndexOf('{') == -1)
                     {
@@ -69,6 +72,19 @@ namespace Cloudform.Core.Parsers
             {
                 sql.DbName = line.Parts[2];
                 sql.ComponentName = line.Parts[3];
+            }
+        }
+
+        private void SetSqlCredentials(Line line)
+        {
+            if (!line.PartsEqualTo(3) || line.Parts[0] != "credentials")
+            {
+                throw new ParsingException(new Error(Error.UnknownSyntax));
+            }
+            else
+            {
+                sql.Username = line.Parts[1];
+                sql.Password = line.Parts[2];
             }
         }
 

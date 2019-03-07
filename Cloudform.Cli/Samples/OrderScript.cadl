@@ -89,6 +89,7 @@ component(Function, ProcessOrder) processOrder size:F
 }
 
 component(SQL, Transaction) transactions
+    credentials(developer24, password123!)
 {
     Table([Customer])
     [

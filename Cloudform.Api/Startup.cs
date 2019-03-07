@@ -28,8 +28,7 @@ namespace Cloudform.Api
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
-            services.AddDbContext<CloudformContext>(options =>
-                options.UseSqlite(Configuration.GetConnectionString("Sqlite")));
+            services.AddDbContext<CloudformContext>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

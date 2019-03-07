@@ -9,14 +9,15 @@ namespace Cloudform.Core.Arctifact
     {
         public Factory()
         {
-            OutputPath = "/Users/Tooraj/Documents/CADL/output"; 
+            OutputPath = "/Users/Tooraj/Documents/CADL/output";
         }
 
         public string Name { get; set; }
         public string Script { get; set; }
+        public int BuildId { get; set; }
         public List<Component> Components { get; set; } = new List<Component>();
         public List<Message> Messages { get; set; } = new List<Message>();
-        public string OutputPath { get; set; } 
+        public string OutputPath { get; set; }
         public string TfPath => $"{OutputPath}/tf";
         public string CodePath => $"{OutputPath}/code";
         public string PackagePath => $"{OutputPath}/package";

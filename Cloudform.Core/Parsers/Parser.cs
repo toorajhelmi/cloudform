@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Cloudform.Core.Arctifact;
 using Cloudform.Core.Components;
+using Cloudform.Core.Reporting;
 
 namespace Cloudform.Core.Parsers
 {
@@ -18,12 +19,15 @@ namespace Cloudform.Core.Parsers
         private int index;
         protected List<Line> lines = new List<Line>();
         protected Factory factory;
+        protected IEventLogger eventLogger;
 
-        public void Parse(Factory factory)
+        public void Parse(Factory factory, IEventLogger eventLogger)
         {
             var messageParser = new MessageParser();
 
             this.factory = factory;
+            this.eventLogger = eventLogger;
+
             ConvertToLines();
 
             for (index = 0; index < lines.Count; index++)
@@ -35,7 +39,7 @@ namespace Cloudform.Core.Parsers
                     if (line.Parts[0] == "message")
                     {
                         var message = messageParser.Parse(lines.Skip(index).ToList(), out int moveAhead);
-                        Console.WriteLine($"Parsed message: {message.Name}");
+                        eventLogger.Log(factory.BuildId, $"Parsed message: {message.Name}");
                         factory.Messages.Add(message);
                         index += moveAhead;
                     }
@@ -43,7 +47,7 @@ namespace Cloudform.Core.Parsers
                     {
                         var componentParser = SelectComponentParser(lines[index]);
                         var component = componentParser.Parse(lines.Skip(index).ToList(), out int moveAhead);
-                        Console.WriteLine($"Parsed component: [{component.GetType().Name}] {component.ComponentName}");
+                        eventLogger.Log(factory.BuildId, $"Parsed component: [{component.GetType().Name}] {component.ComponentName}");
                         factory.Components.Add(component);
                         index += moveAhead;
                     }

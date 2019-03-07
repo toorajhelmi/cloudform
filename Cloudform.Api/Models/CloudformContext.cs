@@ -5,7 +5,7 @@ namespace Cloudform.Api.Models
 {
     public class CloudformContext : DbContext
     {
-        public DbSet<BuildEvent> BuildEvents { get; set; }
+        public DbSet<Build> Builds { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {

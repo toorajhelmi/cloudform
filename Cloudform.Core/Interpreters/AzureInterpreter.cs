@@ -103,8 +103,6 @@ namespace Cloudform.Core.Interpreters
                 foreach (var sql in factory.Components.OfType<Sql>())
                 {
                     sql.ServerName = serverName;
-                    sql.Username = props["sql_admin"].ToString();
-                    sql.Password = props["sql_password"].ToString();
                     props["name"] = sql.DbName;
                     props["dbname"] = sql.DbName;
                     GenerateTf("sql_db", sql.DbName);

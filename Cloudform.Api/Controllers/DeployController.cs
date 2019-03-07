@@ -12,18 +12,22 @@ namespace Cloudform.Api.Controllers
     [ApiController]
     public class DeployController : ControllerBase
     {
-        // GET api/values
+        // GET api/values/5
         [HttpGet]
-        public ActionResult<IEnumerable<string>> Get()
+        public ActionResult<List<Build>> Get(int buildId, int lastEventId)
         {
-            return new string[] { "value1", "value2" };
+            using (var context = new CloudformContext())
+            {  
+                var events = context.Builds.Where(build => build.BuildId == buildId && build.EventId > lastEventId);
+                return events.ToList();
+            }
         }
 
-        // GET api/values/5
-        [HttpGet("{id}")]
-        public ActionResult<string> Get(int id)
+        // POST api/values
+        [HttpPost]
+        public ActionResult<int> Post([FromBody] Package package)
         {
-            var factory = new Factory
+           var factory = new Factory
             {
                 Script = script,
                 Props = new Dictionary<string, object> {
@@ -32,29 +36,19 @@ namespace Cloudform.Api.Controllers
                     { "client_id", "7ffb12bc-357e-46e5-83e2-7231372561a4" },
                     { "tenant_id", "bafa704d-560b-4ee8-9563-c265cae5ffe6" },
                     { "resource_group", "rg3245" },
-                    { "region", "westus2" } }
+                    { "region", "westus2" } },
             };
 
-            Core.Builder.Build(factory);
-            return "ok";
-        }
-
-        // POST api/values
-        [HttpPost]
-        public void Post([FromBody] Package package)
-        {
-            var factory = new Factory
+            var build = new Build();
+            using (var context = new CloudformContext())
             {
-                Script = script,
-                Props = new Dictionary<string, object> {
-                    { "client_secret", "){BQ6{h>?-a568OG#))Y-n5V!|[b(^&" },
-                    { "subscription_id", "9a4fe1a5-274e-4c67-8321-8a55ec1ea64d" },
-                    { "client_id", "7ffb12bc-357e-46e5-83e2-7231372561a4" },
-                    { "tenant_id", "bafa704d-560b-4ee8-9563-c265cae5ffe6" }
-                }
-            };
+                var buildEntity = context.Builds.Add(new Build());
+                context.SaveChanges();
+                factory.BuildId = buildEntity.Entity.BuildId;
+            }
 
-            Core.Builder.Build(factory);
+            Core.Builder.Build(factory, new EventLogger());
+            return new OkObjectResult(factory.BuildId);
         }
 
         // PUT api/values/5

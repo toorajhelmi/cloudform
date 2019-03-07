@@ -22,7 +22,7 @@ namespace Cloudform.Cli
                 }
             };
 
-            Core.Builder.Build(factory);
+            Core.Builder.Build(factory, new EventLogger());
             Console.ReadLine();
         }
     }

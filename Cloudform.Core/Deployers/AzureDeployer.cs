@@ -8,6 +8,7 @@ using Cloudform.Core.Arctifact;
 using Cloudform.Core.Code.Azure;
 using Cloudform.Core.Components;
 using Cloudform.Core.Extensions;
+using Cloudform.Core.Reporting;
 using Cloudform.Core.Settings;
 
 namespace Cloudform.Core.Deployers
@@ -15,8 +16,8 @@ namespace Cloudform.Core.Deployers
     public class AzureDeployer : Deployer
     {
         private const string az = "az";
-        public AzureDeployer(Factory factory, bool debug = false)
-            : base(factory)
+        public AzureDeployer(Factory factory, IEventLogger eventLogger, bool debug = false)
+            : base(factory, eventLogger)
         {
         }
 
