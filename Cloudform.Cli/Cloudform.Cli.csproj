@@ -11,6 +11,6 @@
         <Folder Include="Samples\" />
     </ItemGroup>
     <ItemGroup>
-      <ProjectReference Include="..\Cadl.Core\Cloudform.Core.csproj" />
+      <ProjectReference Include="..\Cloudform.Core\Cloudform.Core.csproj" />
     </ItemGroup>
 </Project>
