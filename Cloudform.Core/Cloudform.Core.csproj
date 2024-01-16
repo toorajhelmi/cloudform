@@ -44,7 +44,7 @@
         </Reference>
     </ItemGroup>
     <ItemGroup>
-        <PackageReference Include="System.Data.SqlClient" Version="4.6.0" />
+        <PackageReference Include="System.Data.SqlClient" Version="4.8.6" />
     </ItemGroup>
     <ItemGroup>
         <None Remove="Parsers\sql-server.txt" />
